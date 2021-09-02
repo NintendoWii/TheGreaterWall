@@ -1,0 +1,11 @@
+Regpath,Key,Value
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor,Command Processor,64
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor,Command Processor,0
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor,Command Processor,1
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor,Command Processor,64
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Taskcache\Tree,Tree,{1, 0, 4, 148...}
+HKEY_CURRENT_USER\SOFTWARE\Microsoft\Command Processor,Command Processor,9
+HKEY_CURRENT_USER\SOFTWARE\Microsoft\Command Processor,Command Processor,0
+HKEY_CURRENT_USER\SOFTWARE\Microsoft\Command Processor,Command Processor,1
+HKEY_CURRENT_USER\SOFTWARE\Microsoft\Command Processor,Command Processor,9
+Filesystem,FileSystem,C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\desktop.ini

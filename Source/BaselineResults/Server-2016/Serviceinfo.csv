@@ -1,0 +1,116 @@
+state,startmode,Servicename,pathname,processid,processname,parentprocessid,parentprocessname
+Stopped,Manual,AppIDSvc,C:\windows\system32\svchost.exe -k LocalServiceNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,AppMgmt,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,AppXSvc,C:\windows\system32\svchost.exe -k wsappx,0,System Idle Process,0,NULL
+Running,Auto,BFE,C:\windows\system32\svchost.exe -k LocalServiceNoNetwork,832,svchost.exe,548,NULL
+Stopped,Manual,BITS,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Disabled,Browser,C:\windows\System32\svchost.exe -k smbsvcs,0,System Idle Process,0,NULL
+Running,Manual,CertPropSvc,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Stopped,Manual,ClipSVC,C:\windows\System32\svchost.exe -k wsappx,0,System Idle Process,0,NULL
+Stopped,Auto,cloudbase-init,"C:\Program Files\Cloudbase Solutions\Cloudbase-Init\bin\OpenStackService.exe" cloudbase-init "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\Python\Scripts\cloudbase-init.exe" --config-file "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\cloudbase-init.conf",0,System Idle Process,0,NULL
+Stopped,Manual,COMSysApp,C:\windows\system32\dllhost.exe /Processid:{02D4B3F1-FD88-11D1-960D-00805FC79235},0,System Idle Process,0,NULL
+Running,Auto,CoreMessagingRegistrar,C:\windows\system32\svchost.exe -k LocalServiceNoNetwork,832,svchost.exe,548,NULL
+Running,Auto,CryptSvc,C:\windows\system32\svchost.exe -k NetworkService,408,svchost.exe,548,NULL
+Running,Auto,DcomLaunch,C:\windows\system32\svchost.exe -k DcomLaunch,640,svchost.exe,548,NULL
+Stopped,Manual,defragsvc,C:\windows\system32\svchost.exe -k defragsvc,0,System Idle Process,0,NULL
+Running,Manual,DeviceInstall,C:\windows\system32\svchost.exe -k DcomLaunch,640,svchost.exe,548,NULL
+Running,Auto,Dhcp,C:\windows\system32\svchost.exe -k LocalServiceNetworkRestricted,980,svchost.exe,548,NULL
+Stopped,Manual,diagnosticshub.standardcollector.service,C:\windows\system32\DiagSvcs\DiagnosticsHub.StandardCollector.Service.exe,0,System Idle Process,0,NULL
+Running,Auto,DiagTrack,C:\windows\System32\svchost.exe -k utcsvc,1380,svchost.exe,548,NULL
+Running,Auto,Dnscache,C:\windows\system32\svchost.exe -k NetworkService,408,svchost.exe,548,NULL
+Running,Auto,DPS,C:\windows\System32\svchost.exe -k LocalServiceNoNetwork,832,svchost.exe,548,NULL
+Stopped,Manual,EapHost,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,EFS,C:\windows\System32\lsass.exe,0,System Idle Process,0,NULL
+Running,Auto,EventLog,C:\windows\System32\svchost.exe -k LocalServiceNetworkRestricted,980,svchost.exe,548,NULL
+Running,Auto,EventSystem,C:\windows\system32\svchost.exe -k LocalService,1020,svchost.exe,548,NULL
+Stopped,Manual,fdPHost,C:\windows\system32\svchost.exe -k LocalService,0,System Idle Process,0,NULL
+Stopped,Disabled,FontCache,C:\windows\system32\svchost.exe -k LocalService,0,System Idle Process,0,NULL
+Running,Auto,gpsvc,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Stopped,Manual,hidserv,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,HvHost,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,IKEEXT,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Running,Auto,iphlpsvc,C:\windows\System32\svchost.exe -k NetSvcs,800,svchost.exe,548,NULL
+Running,Manual,KeyIso,C:\windows\system32\lsass.exe,556,lsass.exe,412,NULL
+Stopped,Manual,KPSSVC,C:\windows\system32\svchost.exe -k KpsSvcGroup,0,System Idle Process,0,NULL
+Stopped,Manual,KtmRm,C:\windows\System32\svchost.exe -k NetworkServiceAndNoImpersonation,0,System Idle Process,0,NULL
+Running,Auto,LanmanServer,C:\windows\System32\svchost.exe -k smbsvcs,1432,svchost.exe,548,NULL
+Running,Auto,LanmanWorkstation,C:\windows\System32\svchost.exe -k NetworkService,408,svchost.exe,548,NULL
+Stopped,Manual,lltdsvc,C:\windows\System32\svchost.exe -k LocalService,0,System Idle Process,0,NULL
+Running,Manual,lmhosts,C:\windows\System32\svchost.exe -k LocalServiceNetworkRestricted,980,svchost.exe,548,NULL
+Running,Auto,LSM,C:\windows\system32\svchost.exe -k DcomLaunch,640,svchost.exe,548,NULL
+Running,Auto,MpsSvc,C:\windows\system32\svchost.exe -k LocalServiceNoNetwork,832,svchost.exe,548,NULL
+Running,Auto,MSDTC,C:\windows\System32\msdtc.exe,1304,msdtc.exe,548,NULL
+Stopped,Manual,MSiSCSI,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,msiserver,C:\windows\system32\msiexec.exe /V,0,System Idle Process,0,NULL
+Stopped,Manual,NcaSvc,C:\windows\System32\svchost.exe -k NetSvcs,0,System Idle Process,0,NULL
+Stopped,Manual,Netlogon,C:\windows\system32\lsass.exe,0,System Idle Process,0,NULL
+Running,Manual,netprofm,C:\windows\System32\svchost.exe -k LocalService,1020,svchost.exe,548,NULL
+Stopped,Manual,NetSetupSvc,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Disabled,NetTcpPortSharing,C:\windows\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe,0,System Idle Process,0,NULL
+Running,Auto,NlaSvc,C:\windows\System32\svchost.exe -k NetworkService,408,svchost.exe,548,NULL
+Running,Auto,nsi,C:\windows\system32\svchost.exe -k LocalService,1020,svchost.exe,548,NULL
+Stopped,Manual,PerfHost,C:\windows\SysWow64\perfhost.exe,0,System Idle Process,0,NULL
+Stopped,Manual,pla,C:\windows\System32\svchost.exe -k LocalServiceNoNetwork,0,System Idle Process,0,NULL
+Running,Manual,PlugPlay,C:\windows\system32\svchost.exe -k DcomLaunch,640,svchost.exe,548,NULL
+Running,Manual,PolicyAgent,C:\windows\system32\svchost.exe -k NetworkServiceNetworkRestricted,808,svchost.exe,548,NULL
+Running,Auto,Power,C:\windows\system32\svchost.exe -k DcomLaunch,640,svchost.exe,548,NULL
+Running,Auto,ProfSvc,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Stopped,Manual,RasMan,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Disabled,RemoteAccess,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Auto,RemoteRegistry,C:\windows\system32\svchost.exe -k localService,0,System Idle Process,0,NULL
+Running,Auto,RpcEptMapper,C:\windows\system32\svchost.exe -k RPCSS,700,svchost.exe,548,NULL
+Running,Auto,RpcSs,C:\windows\system32\svchost.exe -k rpcss,700,svchost.exe,548,NULL
+Stopped,Manual,RSoPProv,C:\windows\system32\RSoPProv.exe,0,System Idle Process,0,NULL
+Stopped,Manual,sacsvr,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Running,Auto,SamSs,C:\windows\system32\lsass.exe,556,lsass.exe,412,NULL
+Stopped,Disabled,SCardSvr,C:\windows\system32\svchost.exe -k LocalServiceAndNoImpersonation,0,System Idle Process,0,NULL
+Stopped,Manual,ScDeviceEnum,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Running,Auto,Schedule,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Stopped,Manual,SCPolicySvc,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,seclogon,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Running,Auto,SENS,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Running,Manual,SessionEnv,C:\windows\System32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Stopped,Manual,SharedAccess,C:\windows\System32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,smphost,C:\windows\System32\svchost.exe -k smphost,0,System Idle Process,0,NULL
+Stopped,Manual,SNMPTRAP,C:\windows\System32\snmptrap.exe,0,System Idle Process,0,NULL
+Stopped,Disabled,Spooler,C:\windows\System32\spoolsv.exe,0,System Idle Process,0,NULL
+Stopped,Auto,sppsvc,C:\windows\system32\sppsvc.exe,0,System Idle Process,0,NULL
+Stopped,Manual,SstpSvc,C:\windows\system32\svchost.exe -k LocalService,0,System Idle Process,0,NULL
+Running,Manual,StateRepository,C:\windows\system32\svchost.exe -k appmodel,856,svchost.exe,548,NULL
+Stopped,Manual,svsvc,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,swprv,C:\windows\System32\svchost.exe -k swprv,0,System Idle Process,0,NULL
+Stopped,Manual,SysMain,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Running,Auto,SystemEventsBroker,C:\windows\system32\svchost.exe -k DcomLaunch,640,svchost.exe,548,NULL
+Running,Manual,TermService,C:\windows\System32\svchost.exe -k termsvcs,1916,svchost.exe,548,NULL
+Stopped,Manual,TieringEngineService,C:\windows\system32\TieringEngineService.exe,0,System Idle Process,0,NULL
+Running,Manual,TimeBrokerSvc,C:\windows\system32\svchost.exe -k LocalServiceNetworkRestricted,980,svchost.exe,548,NULL
+Stopped,Manual,TrustedInstaller,C:\windows\servicing\TrustedInstaller.exe,0,System Idle Process,0,NULL
+Running,Auto,UALSVC,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,816,svchost.exe,548,NULL
+Running,Manual,UmRdpService,C:\windows\System32\svchost.exe -k LocalSystemNetworkRestricted,816,svchost.exe,548,NULL
+Running,Auto,UserManager,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Stopped,Manual,UsoSvc,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,VaultSvc,C:\windows\system32\lsass.exe,0,System Idle Process,0,NULL
+Stopped,Manual,vds,C:\windows\System32\vds.exe,0,System Idle Process,0,NULL
+Stopped,Manual,vmicguestinterface,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,vmicheartbeat,C:\windows\system32\svchost.exe -k ICService,0,System Idle Process,0,NULL
+Stopped,Manual,vmickvpexchange,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,vmicrdv,C:\windows\system32\svchost.exe -k ICService,0,System Idle Process,0,NULL
+Stopped,Manual,vmicshutdown,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,vmictimesync,C:\windows\system32\svchost.exe -k LocalServiceNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,vmicvmsession,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,vmicvss,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Stopped,Manual,VSS,C:\windows\system32\vssvc.exe,0,System Idle Process,0,NULL
+Running,Auto,W32Time,C:\windows\system32\svchost.exe -k LocalService,1020,svchost.exe,548,NULL
+Stopped,Manual,WdiServiceHost,C:\windows\System32\svchost.exe -k LocalService,0,System Idle Process,0,NULL
+Stopped,Manual,WdiSystemHost,C:\windows\System32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL
+Running,Manual,WdNisSvc,"C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.1812.3-0\NisSrv.exe",2140,NisSrv.exe,548,NULL
+Stopped,Manual,Wecsvc,C:\windows\system32\svchost.exe -k NetworkService,0,System Idle Process,0,NULL
+Stopped,Manual,WerSvc,C:\windows\System32\svchost.exe -k WerSvcGroup,0,System Idle Process,0,NULL
+Running,Auto,WinDefend,"C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.1812.3-0\MsMpEng.exe",1556,MsMpEng.exe,548,NULL
+Running,Manual,WinHttpAutoProxySvc,C:\windows\system32\svchost.exe -k LocalService,1020,svchost.exe,548,NULL
+Running,Auto,Winmgmt,C:\windows\system32\svchost.exe -k netsvcs,800,svchost.exe,548,NULL
+Running,Auto,WinRM,C:\windows\System32\svchost.exe -k NetworkService,408,svchost.exe,548,NULL
+Stopped,Manual,wisvc,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,wmiApSrv,C:\windows\system32\wbem\WmiApSrv.exe,0,System Idle Process,0,NULL
+Stopped,Manual,wuauserv,C:\windows\system32\svchost.exe -k netsvcs,0,System Idle Process,0,NULL
+Stopped,Manual,wudfsvc,C:\windows\system32\svchost.exe -k LocalSystemNetworkRestricted,0,System Idle Process,0,NULL

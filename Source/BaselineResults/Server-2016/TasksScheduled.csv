@@ -1,0 +1,65 @@
+TaskName,TaskState,TaskPath,Action,Author
+.NET Framework NGEN v4.0.30319,Ready,\Microsoft\Windows\.NET Framework\,NULL,NULL
+.NET Framework NGEN v4.0.30319 64,Ready,\Microsoft\Windows\.NET Framework\,NULL,NULL
+.NET Framework NGEN v4.0.30319 64 Critical,Disabled,\Microsoft\Windows\.NET Framework\,NULL,NULL
+.NET Framework NGEN v4.0.30319 Critical,Disabled,\Microsoft\Windows\.NET Framework\,NULL,NULL
+AD RMS Rights Policy Template Management (Automated),Disabled,\Microsoft\Windows\Active Directory Rights Management Services Client\,NULL,Microsoft Corporation
+AD RMS Rights Policy Template Management (Manual),Ready,\Microsoft\Windows\Active Directory Rights Management Services Client\,NULL,Microsoft Corporation
+EDP Policy Manager,Ready,\Microsoft\Windows\AppID\,NULL,Microsoft Corporation
+PolicyConverter,Disabled,\Microsoft\Windows\AppID\,%windir%\system32\appidpolicyconverter.exe,Microsoft Corporation
+VerifiedPublisherCertStoreCheck,Disabled,\Microsoft\Windows\AppID\,%windir%\system32\appidcertstorecheck.exe,Microsoft Corporation
+Microsoft Compatibility Appraiser,Ready,\Microsoft\Windows\Application Experience\,%windir%\system32\compattelrunner.exe,$(@%SystemRoot%\system32\appraiser.dll,-501)
+SystemTask,Ready,\Microsoft\Windows\CertificateServicesClient\,NULL,Microsoft Corporation
+UserTask,Ready,\Microsoft\Windows\CertificateServicesClient\,NULL,Microsoft Corporation
+UserTask-Roam,Ready,\Microsoft\Windows\CertificateServicesClient\,NULL,Microsoft Corporation
+ProactiveScan,Ready,\Microsoft\Windows\Chkdsk\,NULL,Microsoft Corporation
+Consolidator,Ready,\Microsoft\Windows\Customer Experience Improvement Program\,%SystemRoot%\System32\wsqmcons.exe,Microsoft Corporation
+Data Integrity Scan,Ready,\Microsoft\Windows\Data Integrity Scan\,NULL,Microsoft Corporation
+Data Integrity Scan for Crash Recovery,Ready,\Microsoft\Windows\Data Integrity Scan\,NULL,Microsoft Corporation
+ScheduledDefrag,Ready,\Microsoft\Windows\Defrag\,%windir%\system32\defrag.exe,Microsoft Corporation
+Device,Ready,\Microsoft\Windows\Device Information\,%windir%\system32\devicecensus.exe,NULL
+LPRemove,Ready,\Microsoft\Windows\MUI\,%windir%\system32\lpremove.exe,Microsoft Corporation
+GatherNetworkInfo,Ready,\Microsoft\Windows\NetTrace\,%windir%\system32\gatherNetworkInfo.vbs,Microsoft
+SDN Diagnostics Task,Disabled,\Microsoft\Windows\Network Controller\,NULL,Microsoft Corporation
+Secure-Boot-Update,Ready,\Microsoft\Windows\PI\,NULL,Microsoft Corporation
+Sqm-Tasks,Ready,\Microsoft\Windows\PI\,NULL,Microsoft Corporation
+Server Manager Performance Monitor,Disabled,\Microsoft\Windows\PLA\,%systemroot%\system32\rundll32.exe,The major version number of the operating system.
+Device Install Reboot Required,Ready,\Microsoft\Windows\Plug and Play\,NULL,Microsoft Corporation
+Sysprep Generalize Drivers,Ready,\Microsoft\Windows\Plug and Play\,%SystemRoot%\System32\drvinst.exe,Microsoft Corporation
+RegIdleBackup,Ready,\Microsoft\Windows\Registry\,NULL,Microsoft Corporation
+CleanupOldPerfLogs,Ready,\Microsoft\Windows\Server Manager\,%systemroot%\system32\cscript.exe,The major version number of the operating system.
+StartComponentCleanup,Ready,\Microsoft\Windows\Servicing\,NULL,NULL
+CreateObjectTask,Ready,\Microsoft\Windows\Shell\,NULL,Microsoft Corporation
+Collection,Disabled,\Microsoft\Windows\Software Inventory Logging\,%systemroot%\system32\cmd.exe,NULL
+Configuration,Ready,\Microsoft\Windows\Software Inventory Logging\,%systemroot%\system32\cmd.exe,NULL
+SvcRestartTask,Ready,\Microsoft\Windows\SoftwareProtectionPlatform\,NULL,Microsoft Corporation
+SvcRestartTaskLogon,Ready,\Microsoft\Windows\SoftwareProtectionPlatform\,NULL,Microsoft Corporation
+SvcRestartTaskNetwork,Ready,\Microsoft\Windows\SoftwareProtectionPlatform\,NULL,Microsoft Corporation
+SpaceAgentTask,Ready,\Microsoft\Windows\SpacePort\,%windir%\system32\SpaceAgent.exe,Microsoft Corporation
+SpaceManagerTask,Ready,\Microsoft\Windows\SpacePort\,%windir%\system32\spaceman.exe,$(@%SystemRoot%\system32\spaceman.exe,-2)
+Storage Tiers Management Initialization,Ready,\Microsoft\Windows\Storage Tiers Management\,NULL,Microsoft Corporation
+Storage Tiers Optimization,Disabled,\Microsoft\Windows\Storage Tiers Management\,%windir%\system32\defrag.exe,Microsoft Corporation
+MsCtfMonitor,Running,\Microsoft\Windows\TextServicesFramework\,NULL,NULL
+SynchronizeTimeZone,Ready,\Microsoft\Windows\Time Zone\,%windir%\system32\tzsync.exe,Microsoft Corporation
+Tpm-HASCertRetr,Ready,\Microsoft\Windows\TPM\,NULL,Microsoft Corporation
+Tpm-Maintenance,Ready,\Microsoft\Windows\TPM\,NULL,Microsoft Corporation
+Maintenance Install,Disabled,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\usoclient.exe,NULL
+Policy Install,Disabled,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\usoclient.exe,NULL
+Reboot,Ready,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\MusNotification.exe,Microsoft Corporation
+Refresh Settings,Ready,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\usoclient.exe,Microsoft Corporation
+Resume On Boot,Disabled,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\usoclient.exe,NULL
+Schedule Scan,Ready,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\usoclient.exe,Microsoft Corporation
+USO_UxBroker_Display,Ready,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\MusNotification.exe,NULL
+USO_UxBroker_ReadyToReboot,Ready,\Microsoft\Windows\UpdateOrchestrator\,%systemroot%\system32\MusNotification.exe,NULL
+HiveUploadTask,Disabled,\Microsoft\Windows\User Profile Service\,NULL,Microsoft Corporation
+ResolutionHost,Ready,\Microsoft\Windows\WDI\,NULL,Microsoft Corporation
+Windows Defender Cache Maintenance,Ready,\Microsoft\Windows\Windows Defender\,C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.1812.3-0\MpCmdRun.exe,NULL
+Windows Defender Cleanup,Ready,\Microsoft\Windows\Windows Defender\,C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.1812.3-0\MpCmdRun.exe,NULL
+Windows Defender Scheduled Scan,Ready,\Microsoft\Windows\Windows Defender\,C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.1812.3-0\MpCmdRun.exe,NULL
+Windows Defender Verification,Ready,\Microsoft\Windows\Windows Defender\,C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.1812.3-0\MpCmdRun.exe,NULL
+QueueReporting,Ready,\Microsoft\Windows\Windows Error Reporting\,%windir%\system32\wermgr.exe,Microsoft Corporation
+BfeOnServiceStartTypeChange,Ready,\Microsoft\Windows\Windows Filtering Platform\,%windir%\system32\rundll32.exe,Microsoft Corporation
+Scheduled Start,Ready,\Microsoft\Windows\WindowsUpdate\,C:\windows\system32\sc.exe,Microsoft Corporation.
+sih,Ready,\Microsoft\Windows\WindowsUpdate\,%systemroot%\System32\sihclient.exe,Microsoft Corporation.
+sihboot,Ready,\Microsoft\Windows\WindowsUpdate\,%systemroot%\System32\sihclient.exe,Microsoft Corporation.
+CacheTask,Running,\Microsoft\Windows\Wininet\,NULL,Microsoft
