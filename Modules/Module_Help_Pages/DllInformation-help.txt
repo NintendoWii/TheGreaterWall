@@ -1,0 +1,32 @@
+Help page for DllInformation
+
+What it does:
+	Queries an endpooint for all running processes, and every .DLL loaded into that process.
+
+CmdLets used:
+	Get-Process
+	Get-AuthenticodeSignature
+	Get-FileHash
+	Get-Date
+
+Output format:
+	CSV
+
+Sample output:
+	IP            : 10.50.0.11
+	Hostname      : USER1-PC
+	DateCollected : 03-Feb-2021 1259
+	ProcessName   : aswEngSrv
+	Processpath   : C:\Program Files\AVG\Antivirus\aswEngSrv.exe
+	Module        : C:\WINDOWS\System32\WS2_32.dll
+	Hash          : 1F996574F38219CDD848375F517F8D86E17542BC84D64CCE63AA0C64CC15F22D
+	Signature     : NULL
+Fields:
+	IP- Ip of the endpoint this module was run on (This filed will read "NULL" until it is post processed)
+	Hostname- Hostname of the endpoint this module was run on
+	DateCollected- Timestamp of when this module was run on the endpoint
+	ProcessName- Name of the running process on the system that is using the .DLLs
+	ProcessPath- Full path to the file location of the executable respoinsible for the process
+	Module- Name of the .DLL loaded into the process
+	Hash- md5 hash of the DLL
+	Signature- Whether or not it's a signed DLL
