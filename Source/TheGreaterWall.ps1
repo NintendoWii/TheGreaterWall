@@ -60,9 +60,88 @@ function tgw ($rawcommand){
 
     #Imports the raw bytes of the .dll needed to query AD without having DStools installed 
     function Import-ActiveDirectory{
-        [Byte[]] $DllBytes = get-content $env:userprofile\desktop\TheGreaterWall\Source\Active_Directory_DLL_bytes.txt
-        $Assembly = [System.Reflection.Assembly]::Load($DllBytes)
-        Import-Module -Assembly $Assembly
+        clear-host
+        header
+        write-output "In order to run the Active Directory Module, you must Specify the IP of the Domain Controller."
+        write-output " "
+        Write-output "1. Continue"
+        write-output "2. Skip"
+        $choice= read-host -Prompt " "
+        clear-host
+
+        if ($choice -eq "2"){
+            write-output "Skipping Active Directory"
+            start-sleep -Seconds 1
+            clear-host
+        }
+
+        if ($choice -ne "1" -and $choice -ne "2"){
+            write-output "Invalid choice"
+            start-sleep -Seconds 1
+            Import-ActiveDirectory
+        }
+
+        if ($choice -eq "1"){
+            header
+            write-output "Please Enter the IP of the Domain Controller"
+            $domaincontrollerip= read-host -prompt " "
+            clear-host    
+                
+            header
+            Write-output "You'll need to provide the credentials to the Domain Controller."
+            Write-output "1. Continue"
+            write-output "2. Skip"
+            $choice= read-host -Prompt " "
+            clear-host
+        
+            
+            if ($choice -ne "1" -and $choice -ne "2"){
+                write-output "Invalid choice"
+                Start-Sleep -Seconds 2
+                Import-ActiveDirectory
+            }
+
+            if ($choice -eq "2"){
+                clear-host
+                write-output "Skipping Active Directory"
+                start-sleep -Seconds 1
+            }
+
+            if ($choice -eq "1"){
+                $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $(Get-Credential)
+
+                if (!$dcsesh){
+                    clear-host
+                    Write-Output "Authentication failed. Please try again."
+                    sleep 2
+                    Import-ActiveDirectory
+                   } 
+
+                if ($dcsesh){
+                    Import-Module -PSSession $dcsesh -name activedirectory
+                    $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                    Remove-PSSession -name dcsesh
+                }
+
+                if ($ad){
+                    clear-host                    
+                    write-output "Successfully imported the Active Directory Module."
+                    sleep 2
+                }
+
+                if (!$ad){
+                    clear-host
+                    header
+                    Write-Host "[ERROR]" -ForegroundColor Red
+                    write-output "Active Directory import failed."
+                    write-output " "
+                    write-output "-Please try again, and be sure that the IP and Credentials you provide are indeed for a Domain Controller and not just a regular workstation."
+                    write-output " "
+                    pause
+                    Import-ActiveDirectory
+                }
+            }
+        }
     }
 
     #Tests the WINRM connectivity to the target IPs
@@ -1525,14 +1604,8 @@ function tgw ($rawcommand){
     #Import AD DLL
     $ad= $(get-module).name | where {$_ -like "*activedirectory*"}
     if (!$ad){
-        write-output "Importing Active Directory DLL. Please be patient."
-        get-Module | where {$_.name -like "*activedirectory*"} -ErrorAction SilentlyContinue | remove-module -Force -ErrorAction SilentlyContinue
-        Expand-Archive -Path $env:userprofile\desktop\thegreaterwall\source\active_directory_DLL_bytes.zip -force -DestinationPath $env:userprofile\desktop\thegreaterwall\source\
-        $adpath= $(get-childitem $env:userprofile\desktop\thegreaterwall\source\active_directory_DLL_bytes -force -Recurse | where {$_.extension -eq ".txt"}).fullname
-        Move-Item -path $adpath -Destination $env:userprofile\desktop\thegreaterwall\source\
-        import-activedirectory
-        remove-item $env:userprofile\desktop\thegreaterwall\source\active_directory_DLL_bytes -Force -Recurse
-        remove-item $env:userprofile\desktop\thegreaterwall\source\active_directory_DLL_bytes.txt -Force -Recurse        
+        
+        import-activedirectory      
         clear-host
     }
 
