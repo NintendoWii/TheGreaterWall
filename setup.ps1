@@ -185,19 +185,7 @@ function setup-framework
 	    Write-Output "To use The Greater Wall, open PowerShell ISE as Administrator and"
         write-output "Go to $env:userprofile\Desktop\TheGreaterWall\Source to access the framework"
         Write-Output " "
-
-        if ($noobfuscation.count -ge 1){
-            write-output "Warning. The follwoing modules will execute in plaintext."
-            $noobfuscation
-        }
-
-        if ($noplaintext.count -ge 1){
-            write-output "Warning. The follwoing modules cannot execute in plaintext."
-            $noplaintext
-        }
-
-
-
+	
         pause
         clear-host
 }
