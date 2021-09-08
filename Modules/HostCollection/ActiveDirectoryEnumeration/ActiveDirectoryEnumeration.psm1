@@ -186,4 +186,4 @@ function ActiveDirectoryEnumeration($serverip,$creds){
         $output | convertfrom-json | convertto-csv -NoTypeInformation
     }
 
-#Export-ModuleMember -Function ActiveDirectoryEnumeration
+Export-ModuleMember -Function ActiveDirectoryEnumeration
