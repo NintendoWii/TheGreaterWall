@@ -52,8 +52,6 @@ function ActiveDirectoryEnumeration{
             $Accountnames += $i.SamAccountName  
         }   
 
-        $accountnames= $Accountnames[50..55]
-
         #Check to see if property list has been built out. If not, build it.
         $x= 0
         while (!$properties){
