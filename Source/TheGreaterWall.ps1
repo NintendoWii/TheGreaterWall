@@ -133,7 +133,7 @@ function tgw ($rawcommand){
                     clear-host
                     header
                     Write-Host "[ERROR]" -ForegroundColor Red
-                    write-output "Active Directory import failed."
+                    write-output "Active Directory import failed. Connection to remote server was successful though."
                     write-output " "
                     write-output "-Please try again, and be sure that the IP and Credentials you provide are indeed for a Domain Controller and not just a regular workstation."
                     write-output " "
