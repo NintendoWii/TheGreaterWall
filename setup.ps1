@@ -98,61 +98,6 @@ function setup-framework
 
             move-item $h $env:userprofile\Desktop\TheGreaterWall\modules\hostcollection
             }              
-       
-        #base64 Decode all the Modules
-        
-        #check to see which modules have or dont have obfuscation
-        $modules= Get-ChildItem -Recurse $env:userprofile\desktop\thegreaterwall\modules | where {$_.name -like "*psm1*" -and $_.name -notlike "reformat*"}
-        $decode= $($modules | where {$_.name -like "*_GH*"}).fullname
-
-        
-        $plainttext= $($modules | where {$_.name -notlike "*_GH*"}).name
-        $obfuscated= $($modules | where {$_.name -like "*_GH*"}).name | % {$_-replace("_obfuscated_GH","")}
-        $noobfuscation= $(Compare-Object $plainttext $obfuscated | where {$_.sideindicator -eq "<="}).inputobject
-        $noplaintext= $(Compare-Object $obfuscated $plainttext | where {$_.sideindicator -eq "<="}).inputobject
-
-
-        #rename the obfuscated folders
-        $folders= @()
-        $folders+= $(Get-ChildItem $env:userprofile\desktop\thegreaterwall\modules\eventlogs_obfuscated)
-        $folders+= $(Get-ChildItem $env:userprofile\desktop\thegreaterwall\modules\hostcollection_obfuscated)
-
-        foreach ($f in $folders){
-        $oldname= $f.fullname
-        $newname= $f.name-replace("_GH","")
-        Rename-Item -Path $oldname -NewName $newname
-        }
-
-        #rename the obfuscated files and decode them
-        $files=@()
-        $files+= $(Get-ChildItem -Recurse $env:userprofile\desktop\thegreaterwall\modules\eventlogs_obfuscated | where {$_.name -like "*_GH*"})
-        $files+= $(Get-ChildItem -Recurse $env:userprofile\desktop\thegreaterwall\modules\HostCollection_obfuscated | where {$_.name -like "*_GH*"})
-
-        clear-host
-        Write-host "Decoding all of the encoded modules. Please be patient."
-
-        foreach ($f in $files){
-            $oldname= $f.fullname
-            $newname= $f.name-replace("_GH","")
-
-            $array= get-content $oldname
-            $output= @()
-            $final= ""
-           
-            foreach ($a in $array){
-                $output+= [char][byte]$a
-            }
-        
-            $x= 0
-            while ($x -le $output.count){
-                $final= $final + $output[$x]
-                $x++
-            }
-
-            $final= $final.split('~') 
-            $final >$oldname
-            Rename-Item -Path $oldname -NewName $newname
-        }
 
         set-location $env:userprofile\desktop\thegreaterwall
         clear-host
@@ -160,18 +105,6 @@ function setup-framework
 	    Write-Output "To use The Greater Wall, open PowerShell ISE as Administrator and"
         write-output "Go to $env:userprofile\Desktop\TheGreaterWall\Source to access the framework"
         Write-Output " "
-
-        if ($noobfuscation.count -ge 1){
-            write-output "Warning. The follwoing modules will execute in plaintext."
-            $noobfuscation
-        }
-
-        if ($noplaintext.count -ge 1){
-            write-output "Warning. The follwoing modules cannot execute in plaintext."
-            $noplaintext
-        }
-
-
 
         pause
         clear-host
