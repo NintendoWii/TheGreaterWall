@@ -10,9 +10,7 @@ function setup-framework
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall" -name "Results" -Force
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall" -name "TgwLogs" -Force
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\TgwLogs" -name "PowerShell_Master_Reference" -Force
-        new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Module_Help_Pages" -Force
-        new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "EventLogs_Obfuscated" -Force
-        new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "HostCollection_Obfuscated" -Force 
+        new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Module_Help_Pages" -Force 
         #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source" -name "Baselineresults" -Force
         #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Server-2019" -Force  
         #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Server-1809" -Force  
@@ -47,16 +45,12 @@ function setup-framework
             write-output "Could not find TheGreaterWall.ps1. Searching for it..."
             $filepath= $($(get-childitem $env:userprofile -force -Recurse -ErrorAction SilentlyContinue | where {$_.name -eq "TheGreaterWall.ps1"}).fullName)[0]
             copy-item -path $filepath -destination $env:userprofile\Desktop\TheGreaterWall
-            }
-        
-        #copy active directory bytes
-        copy-item -path "$currentlocation\source\Active_Directory_DLL_bytes.zip" -destination "$env:userprofile\Desktop\TheGreaterWall\source\Active_Directory_DLL_bytes.zip"
+            }       
 
         #move configuration and help pages
         copy-item -path $currentlocation\modules\modules.conf -destination $env:userprofile\Desktop\TheGreaterWall
         move-item -path $env:userprofile\desktop\thegreaterwall\modules.conf -Destination $env:userprofile\desktop\thegreaterwall\modules\modules.conf
 
-        #$helppages= $(get-childitem -force -Recurse $currentlocation | where {$_.name -eq "Module_Help_pages"})
         copy-item -Path $currentlocation\modules\Module_Help_Pages -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\ -Container
         #move-item -path $env:userprofile\desktop\thegreaterwall\module_help_pages -Destination $env:userprofile\desktop\thegreaterwall\modules\module_help_pages  
 
@@ -90,18 +84,9 @@ function setup-framework
         $modules= Get-ChildItem $env:userprofile\Desktop\TheGreaterWall\modules | where {$_.name -notlike "eventlogs*" -and $_.name -notlike "Hostcollection*" -and $_.name -ne "Module_Help_Pages" -and $_.name -ne "modules.conf"}
 
         #move modules to their correct folder (HostCollection or EventLogs)
-        if (!$(test-path $env:userprofile\desktop\TheGreaterWall\modules\eventlogs_obfuscated)){
-            new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "EventLogs_Obfuscated" -Force
-        }
-
-        if (!$(test-path $env:userprofile\desktop\TheGreaterWall\modules\hostcollection_obfuscated)){
-            new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "hostcollection_Obfuscated" -Force
-        }
 
         $eventlogscripts= $modules | where {$_.name -like "*log*" -and $_.name -notlike "*_GH*"}
-        $obfuscatedeventlogs= $modules | where {$_.name -like "*log*" -and $_.name -like "*_GH*"}
         $hostScripts= $modules | where {$_.name -notlike "*log*" -and $_.name -notlike "*_GH*"}
-        $obfuscatedhostcollection= $modules | where {$_.name -notlike "*log*" -and $_.name -like "*_GH*"}
 
         foreach ($e in $eventlogscripts)
             {
@@ -112,17 +97,7 @@ function setup-framework
             {
 
             move-item $h $env:userprofile\Desktop\TheGreaterWall\modules\hostcollection
-            }
-
-        foreach ($e in $obfuscatedeventlogs)
-            {
-            move-item $e $env:userprofile\Desktop\TheGreaterWall\modules\eventlogs_obfuscated
-            }
-       
-        foreach ($h in $obfuscatedhostcollection)
-            {
-            move-item $h $env:userprofile\Desktop\TheGreaterWall\modules\hostcollection_obfuscated
-            }       
+            }              
        
         #base64 Decode all the Modules
         
@@ -185,7 +160,19 @@ function setup-framework
 	    Write-Output "To use The Greater Wall, open PowerShell ISE as Administrator and"
         write-output "Go to $env:userprofile\Desktop\TheGreaterWall\Source to access the framework"
         Write-Output " "
-	
+
+        if ($noobfuscation.count -ge 1){
+            write-output "Warning. The follwoing modules will execute in plaintext."
+            $noobfuscation
+        }
+
+        if ($noplaintext.count -ge 1){
+            write-output "Warning. The follwoing modules cannot execute in plaintext."
+            $noplaintext
+        }
+
+
+
         pause
         clear-host
 }
