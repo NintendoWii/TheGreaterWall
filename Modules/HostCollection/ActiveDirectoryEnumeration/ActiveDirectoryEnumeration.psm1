@@ -34,7 +34,7 @@ function ActiveDirectoryEnumeration{
    } 
 
 
-
+    #This code is just for debugging purposes
     #make persistent connection to DC
     #get-pssession -name dcsesh -ErrorAction SilentlyContinue | remove-pssession
     #$dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $dccreds
