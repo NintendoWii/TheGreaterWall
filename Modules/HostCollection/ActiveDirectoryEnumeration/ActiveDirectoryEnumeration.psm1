@@ -49,9 +49,7 @@ function ActiveDirectoryEnumeration{
         
         foreach($i in $Everything){   
             $Accountnames += $i.SamAccountName  
-        }   
-        
-        $accountnames= $accountnames[30..40]
+        }           
 
         #Check to see if property list has been built out. If not, build it.
         if (!$properties){
