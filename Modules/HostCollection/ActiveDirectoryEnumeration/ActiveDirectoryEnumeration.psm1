@@ -42,7 +42,7 @@ function ActiveDirectoryEnumeration{
     #Import-PSSession -Session $dcsesh -Module activedirectory -AllowClobber | out-null
 
         #Get all AD info
-        $Everything= Get-ADUser -Filter * 
+        $Everything= Get-ADUser -Filter *
 
         $Accountnames=@()
         $finaloutput= @()
@@ -61,14 +61,36 @@ function ActiveDirectoryEnumeration{
         foreach ($i in $Accountnames){
             #pull all info
             $results= build-class $properties
-            $output= get-ADUser -Identity $i -Properties * | select * | convertto-csv | convertfrom-csv        
+            $output= get-ADUser -Identity $i -Properties * | select *
             
+            #Take care of objects
+            $objects= @()
+            $objects+= "prop,val"
+
+            foreach ($p in $properties){
+                if ($output.$p){
+                    if ($($output.$p.gettype() | select basetype).basetype.name -eq "Object"){
+                        $objects+= "$p,$($output.$p-join('|'))"
+                    }
+                }
+            }
+
+            $output= $output | convertto-csv | convertfrom-csv 
+            $objects= $objects | convertfrom-csv                               
+
             $resultspropertylist= $($results | Get-Member | where {$_.membertype -eq "Noteproperty"}).name
             $resultspropertylist= $resultspropertylist | where {$_ -ne "IP" -and $_ -ne "Hostname" -and $_ -ne "DateCollected"}
 
             foreach ($r in $resultspropertylist){
-                if ($output.$r){
-                    $results.$r = $output.$r
+                
+                if ($output.$r -or $($objects | where {$_.prop -eq "$r"}).val){
+                    if ($($objects.prop) -contains $r){
+                        $results.$r = $($objects | where {$_.prop -eq $r}).val
+                    }
+    
+                    if ($($objects.prop) -notcontains $r){                    
+                        $results.$r = $output.$r
+                    }
                 }
             }
 
