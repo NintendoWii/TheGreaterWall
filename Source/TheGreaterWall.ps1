@@ -515,7 +515,6 @@ function tgw ($rawcommand){
                     }
                 }
             }
-            pause
         }
 
         function cleanup-headers{
