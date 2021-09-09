@@ -18,10 +18,11 @@ function ActiveDirectoryEnumeration{
     }
 
     function build-class($properties){
+        $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
         $outputclass= [pscustomobject][ordered]@{
         IP= $null
         Hostname= $($env:computername)
-        DateCollected= $null
+        DateCollected= $date
         }
        
         foreach ($p in $properties){
@@ -34,7 +35,7 @@ function ActiveDirectoryEnumeration{
    } 
 
 
-    #This code is just for debugging purposes
+
     #make persistent connection to DC
     #get-pssession -name dcsesh -ErrorAction SilentlyContinue | remove-pssession
     #$dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $dccreds
@@ -51,6 +52,7 @@ function ActiveDirectoryEnumeration{
             $Accountnames += $i.SamAccountName  
         }   
         
+        $accountnames= $accountnames[30..40]
 
         #Check to see if property list has been built out. If not, build it.
         if (!$properties){
