@@ -21,7 +21,7 @@ function ActiveDirectoryEnumeration{
     function build-class($properties){
         $outputclass= [pscustomobject][ordered]@{
         IP= $null
-        Hostname= $null
+        Hostname= $($env:computername)
         DateCollected= $null
         }
        
@@ -51,6 +51,7 @@ function ActiveDirectoryEnumeration{
         foreach($i in $Everything){   
             $Accountnames += $i.SamAccountName  
         }   
+        
 
         #Check to see if property list has been built out. If not, build it.
         $x= 0
