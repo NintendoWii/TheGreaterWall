@@ -66,8 +66,8 @@ function ActiveDirectoryEnumeration{
             $objects+= "prop,val"
 
             foreach ($p in $properties){
-                if ($output.$p){
-                    if ($($output.$p.gettype() | select basetype).basetype.name -eq "Object"){
+                if ($($output.$p.gettype() | select basetype).basetype.name -eq "Object"){                
+                    if ($output.$p){
                         $objects+= "$p,$($output.$p-join('|'))"
                     }
                 }
