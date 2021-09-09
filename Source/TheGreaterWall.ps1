@@ -120,8 +120,21 @@ function tgw ($rawcommand){
                    } 
 
                 if ($dcsesh){
-                    Import-Module -PSSession $dcsesh -name activedirectory
                     $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                    if ($ad){
+                        Clear-Host
+                        write-output "Active Directory module already loaded."
+                        start-sleep -Seconds 1
+                    }
+
+                    if (!$ad){
+                        clear-host
+                        Write-output "Loading Active Directory module."
+                        start-sleep -Seconds 1
+                        Import-Module -PSSession $dcsesh -name activedirectory
+                        $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                    }
+
                     Remove-PSSession -name dcsesh
                 }
 
@@ -465,7 +478,26 @@ function tgw ($rawcommand){
             Remove-Variable -name name -Force -ErrorAction SilentlyContinue
             Remove-Variable -name file -Force -ErrorAction SilentlyContinue
             $ErrorActionPreference= "SilentlyContinue"
+           
+            #copy active directory file. This just needs to happen one time; not once for each folder.
+            $adfolderpostprocess= Get-ChildItem -Path $postprocessingpath -ErrorAction SilentlyContinue | where {$_.name -like "*postprocessed*"} | where {$_.name -like "*ActiveDirectory*"}
+            
+            if ($adfolderpostprocess){
+                $adname= $($adfolderpostprocess.name.tostring().split('-'))[0]
+                $adfolder= $adfolderpostprocess.FullName
+                $targetfile= $(Get-ChildItem -Recurse -path $resultspath -ErrorAction SilentlyContinue | where {$_.name -like "*activedirectory*" -and $_.attributes -eq "Archive"}).fullname
+            
+                if ($targetfile){
+                    $content= get-content $targetfile
+                    $content >> "$postprocessingpath\RawData\all_ActiveDirectoryEnumeration.csv"
+                }
         
+                if (!$targetfile){
+                    Write-host "[Warning] $dataset file missing for $name" -ForegroundColor Red
+                }
+            }
+
+            #Copy all the rest of the files
             foreach ($folder in $postprocessfoldernames){
                 $name= $($folder.name.tostring().split('-'))[0]
                 $folder= $folder.FullName
@@ -483,6 +515,7 @@ function tgw ($rawcommand){
                     }
                 }
             }
+            pause
         }
 
         function cleanup-headers{
@@ -500,29 +533,35 @@ function tgw ($rawcommand){
                 
                 $conf= $configuration | Where {$_.p1 -eq $filename}
                 $header= $($conf | where {$_.p2 -eq "csvheader"}).p3.tostring()
+
+                if ($header -ne 'LEAVE-ORIGINAL'){
+                    $content= Get-Content $name
         
-                $content= Get-Content $name
-        
-                $output+= $header
-                $output+= $content
-        
-                $output >$name
+                    $output+= $header
+                    $output+= $content
+            
+                    $output >$name
+                }
             }
             
             #reapply headers to postprocessed datasets
-            $files= get-childitem -recurse $postprocessingpath\*postprocessed
-            write-output "Re-applying headers"
-            foreach ($f in $files){
-                $fullname= $f.fullname
-                $module= $f.name.split('-')[0]
-                $conf= $configuration | Where {$_.p1 -eq $module}
-                if ($conf){
-                    $header= $($conf | where {$_.p2 -eq "csvheader"}).p3.tostring()
-                    $content= get-content $fullname
-                    $output= @()
-                    $output+= $header
-                    $output+= $content
-                    $output >$fullname
+            if ($header -ne 'LEAVE-ORIGINAL'){
+                $files= get-childitem -recurse $postprocessingpath\*postprocessed
+                write-output "Re-applying headers"
+
+                foreach ($f in $files){
+                    $fullname= $f.fullname
+                    $module= $f.name.split('-')[0]
+                    $conf= $configuration | Where {$_.p1 -eq $module}
+    
+                    if ($conf){
+                        $header= $($conf | where {$_.p2 -eq "csvheader"}).p3.tostring()
+                        $content= get-content $fullname
+                        $output= @()
+                        $output+= $header
+                        $output+= $content
+                        $output >$fullname
+                    }
                 }
             }
             write-output "Done re-applying headers"
@@ -636,6 +675,9 @@ function tgw ($rawcommand){
                 }
             }
         }
+
+        #function Reformat-ActiveDirectoryinfo{
+        #    $activedirectoryfile= $(Get-ChildItem $env:userprofile\Desktop\TheGreaterWall\Results\ActiveDirectoryEnumeration*).fullname
 
     ################
     #Start Analysis#
@@ -1837,7 +1879,11 @@ function tgw ($rawcommand){
                 get-creds
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
-                        
+            if ($action -eq "reset-DCcreds"){
+                clear-host
+                Import-ActiveDirectory
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+            }                        
             if ($action -eq "hail-mary"){
                 clear-host
                 write-host "You've selected HAIL-MARY. This runs all $mode modules on all IPs"
@@ -1915,6 +1961,15 @@ function tgw ($rawcommand){
                 pause
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
+
+            if ($action -eq "show-DCcreds"){
+                clear-host
+                write-output "Domain Controller Credentials:"
+                write-output "- Username: $($($DCcreds).username)    IP: $domaincontrollerip"
+                write-output " "
+                pause
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+            }
             
             if ($action -like "whatis*"){
                 $query= $($action.split(' '))[1]
@@ -1964,7 +2019,7 @@ function tgw ($rawcommand){
                     Remove-Module -name $modulename
                         
                     $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                    Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
+                    Invoke-Command -ScriptBlock $actioncode -jobname "$domaincontrollerip-$modulename-$date" -Session $dcsesh  
                 }
 
                 else{
@@ -2042,7 +2097,7 @@ function tgw ($rawcommand){
                         Remove-Module -name $modulename
                         
                         $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                        Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh                    
+                        Invoke-Command -ScriptBlock $actioncode -jobname "$domaincontrollerip-$modulename-$date" -Session $dcsesh                    
                     }
 
                     else{
