@@ -786,7 +786,7 @@ function tgw ($rawcommand){
         #END Build PowerShell Master Reference#
         #######################################
         #Add ip address to the content of each file, replacing the value "NULL" in the IP field of the CSV
-        pause
+
         #since this doesn't need to be done for the active directory results, just make a copy to the post processing location
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
         $file= $files | where {$_.name -like "*ActiveDirectory*"}
