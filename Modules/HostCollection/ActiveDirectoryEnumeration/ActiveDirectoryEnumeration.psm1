@@ -1,17 +1,16 @@
 function ActiveDirectoryEnumeration{
     Remove-Variable -name properties -Force -ErrorAction SilentlyContinue
-    function build-properties($sampleaccount){
+
+    function build-properties ($accountnames){
         $props= @()
-        $sampleaccount= $sampleaccount | out-string -Stream
-        
-        foreach ($s in $sampleaccount){
-            $prop= $s.split(':')[0]
-           $prop= $prop.trimstart().trimend()
-           
-            if ($prop){
-                $props+= $prop
-            }
-        }
+        foreach ($a in $accountnames){
+            $info= get-ADUser -Identity $a -Properties * | select * | ConvertTo-Csv | convertfrom-csv
+            $prop= $($info | Get-Member | where {$_.membertype -eq "NoteProperty"}).name
+            $props+= $prop
+
+            $props= $props | sort -Unique
+        }           
+                    
         $props+= "Groups"
         $props= $props | where {$_ -ne "RunspaceID" -and $_ -ne "ObjectGUID"}
 
@@ -54,56 +53,32 @@ function ActiveDirectoryEnumeration{
         
 
         #Check to see if property list has been built out. If not, build it.
-        $x= 0
-        while (!$properties){
-            $sampleaccount= $accountnames[$x]
-            $sampleaccount= Get-ADUser -Identity $sampleaccount -Properties *
-            $properties= build-properties $sampleaccount
-            $x++
+        if (!$properties){
+            $properties= build-properties $accountnames
         }
            
         foreach ($i in $Accountnames){
             #pull all info
             $results= build-class $properties
-            $info= get-ADUser -Identity $i -Properties *
+            $output= get-ADUser -Identity $i -Properties * | select * | convertto-csv | convertfrom-csv        
             
-            #clean up output
-            $output= @()
-            $output+= "Property:Value"
-            $info= $info | out-string -stream
-            $output+= $info
-            $output= $output | convertfrom-csv -Delimiter ":"
-            
-            foreach ($o in $output){
-                $cleanproperty= $o.property
-                $cleanproperty= $cleanproperty.tostring().trimend()
-                $cleanvalue= $o.value
-                
-                if ($cleanvalue){
-                    $cleanvalue= $cleanvalue.tostring().trimend()
-                    $cleanvalue= $cleanvalue-replace('{','<')
-                    $cleanvalue= $cleanvalue-replace('}','>')
-                }
+            $resultspropertylist= $($results | Get-Member | where {$_.membertype -eq "Noteproperty"}).name
+            $resultspropertylist= $resultspropertylist | where {$_ -ne "IP" -and $_ -ne "Hostname" -and $_ -ne "DateCollected"}
 
-                if (!$cleanvalue){
-                    $cleanvalue= "NULL"
-                }
-
-                #append to class
-                if ($cleanproperty -ne "Runspaceid" -and $cleanproperty -ne "ObjectGUID" -and $cleanvalue){
-                    $results.$cleanproperty = $cleanvalue                
+            foreach ($r in $resultspropertylist){
+                if ($output.$r){
+                    $results.$r = $output.$r
                 }
             }
+
             #get groups
             $Groups= (Get-ADPrincipalGroupMembership "$i").name-join(',')
-
-            if (!$groups){
-                $groups= "NULL"
-            }
             
             #append groups to refned output
-            $results.groups = $groups
-
+            if ($groups){
+                $results.groups = $groups
+            }
+            
             $finaloutput+= $results | convertto-json
         }
     
