@@ -782,7 +782,9 @@ function tgw ($rawcommand){
         $actioncode = [scriptblock]::Create($action)
         start-job -ScriptBlock $actioncode -Name PowerShell_Log_Builder | Out-Null
         #Invoke-Command -ScriptBlock $actioncode -ComputerName 127.0.0.1 -JobName PowerShell_LOG_Builder -AsJob | Out-Null
-
+        #######################################
+        #END Build PowerShell Master Reference#
+        #######################################
         #Add ip address to the content of each file, replacing the value "NULL" in the IP field of the CSV
         
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
@@ -2019,7 +2021,7 @@ function tgw ($rawcommand){
                     Remove-Module -name $modulename
                         
                     $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                    Invoke-Command -ScriptBlock $actioncode -jobname "$domaincontrollerip-$modulename-$date" -Session $dcsesh  
+                    Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
                 }
 
                 else{
@@ -2097,7 +2099,7 @@ function tgw ($rawcommand){
                         Remove-Module -name $modulename
                         
                         $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                        Invoke-Command -ScriptBlock $actioncode -jobname "$domaincontrollerip-$modulename-$date" -Session $dcsesh                    
+                        Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh                    
                     }
 
                     else{
