@@ -683,7 +683,7 @@ function tgw ($rawcommand){
     #Start Analysis#
     ################
          
-
+        
         Function identify-outlyers ($inputdata){
             $start= get-date
             new-item -ItemType Directory -Path $postprocessingpath\AnalysisResults -name OutlyerAnalysis -ErrorAction SilentlyContinue | out-null
@@ -701,11 +701,15 @@ function tgw ($rawcommand){
                 $sortproperties= $($settings | where {$_.p2 -eq "Pivot"}).p3
                 $ipproperty= $($settings | where {$_.p2 -eq "IP"}).p3
                 $csvheader= $($settings | where {$_.p2 -eq "csvheader"}).p3
-                $csvheader= $csvheader + ",PropertyFlagged"
+
+                if ($csvheader -ne "LEAVE-ORIGINAL"){
+                    $csvheader= $csvheader + ",PropertyFlagged"
+                }                
                 
                 #get contents of file
                 $path= "$postprocessingpath\RawData\all_$inputdata.csv"
                 $output= get-content $path -ErrorAction SilentlyContinue
+                
 
                 if (!$output){
                     Write-Host "[Warning] no $inputdata file" -ForegroundColor Red
