@@ -786,6 +786,14 @@ function tgw ($rawcommand){
         #######################################
         #Add ip address to the content of each file, replacing the value "NULL" in the IP field of the CSV
         
+        #since this doesn't need to be done for the active directory results, just make a copy to the post processing location
+        $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
+        $file= $files | where {$_.name -like "*ActiveDirectory*"}
+        $filename= $file.fullname
+        $name= $file.name-replace('.txt','')
+        $outputdirectory= get-childitem $postprocessingpath | where {$_.name -like "*ActiveDirectory*"}
+        copy-item -Path $filename -Destination $outputdirectory\$name-postprocessed.csv
+        
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
         $files= $files | where {$_.name -notlike "*powershell*"} |  where {$_.name -notlike "*ActiveDirectory*"}
         foreach ($f in $files){
