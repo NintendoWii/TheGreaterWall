@@ -20,7 +20,6 @@ function ActiveDirectoryEnumeration{
     function build-class($properties){
         $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
         $outputclass= [pscustomobject][ordered]@{
-        IP= $null
         Hostname= $($env:computername)
         DateCollected= $date
         }
