@@ -486,7 +486,7 @@ function tgw ($rawcommand){
             if ($adfolderpostprocess){
                 $adname= $($adfolderpostprocess.name.tostring().split('-'))[0]
                 $adfolder= $adfolderpostprocess.FullName
-                $targetfile= $(Get-ChildItem -Recurse -path $resultspath -ErrorAction SilentlyContinue | where {$_.name -like "*activedirectory*" -and $_.attributes -eq "Archive"}).fullname
+                $targetfile= $(Get-ChildItem -Recurse -path $adfolder -ErrorAction SilentlyContinue | where {$_.name -like "*activedirectory*" -and $_.attributes -eq "Archive"}).fullname
             
                 if ($targetfile){
                     $content= get-content $targetfile
