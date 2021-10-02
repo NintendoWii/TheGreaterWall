@@ -26,8 +26,9 @@
                 if ($output){
                     $refinedoutput= $output | ConvertFrom-Csv
                     $refinedoutput | Add-Member -NotePropertyName Propertyflagged -NotePropertyValue "NULL"
+                    $accounts= $refinedoutput.samaccountname
 
-                    #define number of useraccount as half of the total count
+                    #define number of useraccounts as half of the total count
                     $numberofuseraccounts= $($refinedoutput.samaccountname.count)/2
                         
                     #round up if decimal
@@ -35,34 +36,98 @@
                         $numberofuseraccounts= $($numberofuseraccounts.tostring().split("\."))[0]
                         $numberofuseraccounts= [int]$numberofuseraccounts+1
                     }
-                
-                    $sketch= @()
+                                    
                     $finalout= @()
-                    #find only lone occurences
+                    #find only lone occurences of true/false values
                         
-                    foreach ($sortproperty in $sortproperties){                        
-                        $result= $($refinedoutput | Group-Object -Property $sortproperty)
-                        $result
-                        echo " "
-                        pause}
-                        ).group | where {$_.count -le $numberofuseraccounts }.group{
-                            $i= $($i | convertto-csv)-replace('"','')
-                            $i= $i[-1]
-                            $sketch+= "$i,$sortproperty"
+                    foreach ($sortproperty in $sortproperties){    
+                        $sketch= @()                
+                        $result= $refinedoutput | Group-Object -Property $sortproperty                        
+                        $result= $result | where {$_.count -le $numberofuseraccounts}
+                        $propertyflagged= $sortproperty
+                        
+                        foreach ($i in $result.group){
+                            $i.Propertyflagged = $propertyflagged
+                            $i= $i | ConvertTo-Json
+                            $sketch+= $i
+                        }                    
+                        
+                        $finalout+= $sketch
+                    }                        
+                    
+                    #grab all properties
+                    $allproperties= $($refinedoutput[0] | get-member | where {$_.membertype -eq "noteproperty"})
+
+                    #find occurences where the majority of the values are "NULL", but some aren't and vice versa
+                    $nullproperties= $($allproperties | where {$_.definition -like "*=NULL"}).name | sort -unique
+                    $sketch= @()
+
+                    foreach ($nullproperty in $nullproperties){    
+                        $sketch= @()                
+                        $result= $refinedoutput | Group-Object -Property $nullproperty
+
+                        if ($($result | where {$_.name -eq "Null"}).count -ge $numberofuseraccounts){                   
+                            $result= $result | where {$_.count -le $numberofuseraccounts}
+                            $propertyflagged= "$nullproperty is not Null"
+                        }
+
+                        if ($($result | where {$_.name -eq "Null"}).count -le $numberofuseraccounts){                   
+                            $result= $result | where {$_.name -eq "Null"}
+                            $propertyflagged= "$nullproperty is NULL"
                         }
                         
-                        #find occurences where it shows up more than once on a single endpoint    
-                        #foreach ($i in $($refinedoutput | Group-Object -Property $sortproperty | where {$($_.group.$ipproperty | sort -unique).count -le $numberofendpoints}).group){
-                        #    $i= $($i | convertto-csv)-replace('"','')
-                        #    $i= $i[-1]
-                        #    $sketch+= "$i,$sortproperty"   
-                        #}
+                        if ($result){
+                            foreach ($i in $result.group){
+                                $i.Propertyflagged = $propertyflagged
+                                $i= $i | ConvertTo-Json
+                                $sketch+= $i
+                            }                    
+                                    
+                            $finalout+= $sketch
+                        }  
                     }
+                
+                    #look for abnormally long values
+                    $propertytable= @()
+                    $propertytable+= "property,value,Length"
+                    $allprops= $allproperties.name
 
-                    $finalout+= $csvheader
-                    $finalout+= $sketch | sort -Unique
+                    foreach ($r in $refinedoutput){
+                        
+                        foreach ($a in $allprops){
+                            $value= $r.$a.tostring()
+                            $propertytable+= "$a,$value,$($value.length)"
+                        }
+                    }
+                    $propertytable= $propertytable | convertfrom-csv
+                    
+                    foreach ($a in $allproperties){
+                        $props= $($propertytable | where {$_.property -eq "$($a.name)"} | Group-Object -Property length)
+                        
+                        #Get the most common property length and find occurences where theres properties 10 chars larger 
+                        if ($props.count -ge 2){
+                            [int]$largeprop= $($props | sort -Descending -Property count)[0].name
+                            $prop= $props | where {$_.name -ge $($largeprop + 10)}
+
+                            foreach ($p in $prop){
+                                $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
+                                $propertyflagged= "$($a.name)-Length"
+                                foreach ($subproperty in $p){                                    
+                                    $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
+                                    
+                                    foreach ($h in $hit){
+                                        $h.propertyflagged = $propertyflagged
+                                        $h= $h | ConvertTo-Json
+                                        $sketch+= $h
+                                    }
+                                }
+                            }
+                        }
+                    }
                                                 
                     if ($finalout.count -gt 1){     
+                    new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
+                    $finalout= $finalout | ConvertFrom-Json | ConvertTo-Csv -NoTypeInformation
                     $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
                     }
                 }
