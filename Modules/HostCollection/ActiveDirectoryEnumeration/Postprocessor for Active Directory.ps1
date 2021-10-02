@@ -88,6 +88,7 @@
                     }
                 
                     #look for abnormally long values
+                    $sketch= @()
                     $propertytable= @()
                     $propertytable+= "property,value,Length"
                     $allprops= $allproperties.name
@@ -99,31 +100,42 @@
                             $propertytable+= "$a,$value,$($value.length)"
                         }
                     }
+
                     $propertytable= $propertytable | convertfrom-csv
                     
                     foreach ($a in $allproperties){
                         $props= $($propertytable | where {$_.property -eq "$($a.name)"} | Group-Object -Property length)
                         
                         #Get the most common property length and find occurences where theres properties 10 chars larger 
-                        if ($props.count -ge 2){
-                            [int]$largeprop= $($props | sort -Descending -Property count)[0].name
-                            $prop= $props | where {$_.name -ge $($largeprop + 10)}
+                        if ($props.name.count -ge 2){
+                            [int]$commonprop= $($props | sort -Descending -Property count)[0].name
+                            $prop= @()
 
-                            foreach ($p in $prop){
-                                $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
-                                $propertyflagged= "$($a.name)-Length"
-                                foreach ($subproperty in $p){                                    
-                                    $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
-                                    
-                                    foreach ($h in $hit){
-                                        $h.propertyflagged = $propertyflagged
-                                        $h= $h | ConvertTo-Json
-                                        $sketch+= $h
-                                    }
+                            foreach ($p in $props){
+                                $p
+                                if ([int]$p.name -ge $($commonprop + 10)){
+                                    $prop+= $p
+                                }
+                            }
+                        }}
+
+                        foreach ($p in $prop){
+                            $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
+                            $propertyflagged= "$($a.name)-Length"
+                            
+                            foreach ($subproperty in $p.group){
+                                $subproperty= $subproperty.value                                    
+                                $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
+                                
+                                foreach ($h in $hit){
+                                   $h.propertyflagged = $propertyflagged
+                                   $h= $h | ConvertTo-Json
+                                   $sketch+= $h
                                 }
                             }
                         }
                     }
+                }
                                                 
                     if ($finalout.count -gt 1){     
                     new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
