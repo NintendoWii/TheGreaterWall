@@ -25,6 +25,13 @@
                 
                 if ($output){
                     $refinedoutput= $output | ConvertFrom-Csv
+                    #test
+                    $($refinedoutput | where {$_.telephonenumber -ne "Null"})[0].telephonenumber = "abcdef123456789987654321abcdef=="
+                        
+                        foreach ($r in $refinedoutput){
+                            $r.groups = $r.groups-replace(',','|')
+                        }
+
                     $refinedoutput | Add-Member -NotePropertyName Propertyflagged -NotePropertyValue "NULL"
                     $accounts= $refinedoutput.samaccountname
 
@@ -102,9 +109,11 @@
                     }
 
                     $propertytable= $propertytable | convertfrom-csv
+                    $sketch= @()
                     
                     foreach ($a in $allproperties){
-                        $props= $($propertytable | where {$_.property -eq "$($a.name)"} | Group-Object -Property length)
+
+                        $props= $($($propertytable | where {$_.property -eq "$($a.name)"}) | Group-Object -Property length)
                         
                         #Get the most common property length and find occurences where theres properties 10 chars larger 
                         if ($props.name.count -ge 2){
@@ -112,30 +121,33 @@
                             $prop= @()
 
                             foreach ($p in $props){
-                                $p
+                                #$p
                                 if ([int]$p.name -ge $($commonprop + 10)){
                                     $prop+= $p
                                 }
                             }
-                        }}
+                        }
 
                         foreach ($p in $prop){
+                            $propertyflagged= "$($a.name)-Length was $($p.name). Common length was $commonprop"
                             $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
-                            $propertyflagged= "$($a.name)-Length"
                             
-                            foreach ($subproperty in $p.group){
-                                $subproperty= $subproperty.value                                    
+                            
+                            foreach ($subproperty in $p){                                   
                                 $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
+                                $hit;pause
                                 
                                 foreach ($h in $hit){
                                    $h.propertyflagged = $propertyflagged
                                    $h= $h | ConvertTo-Json
-                                   $sketch+= $h
+                                   $sketch+= $h                                   
                                 }
                             }
                         }
                     }
                 }
+                #still working on eliminating flase positive. example Serviceprincipalnames comes back as 62, common was 4
+                #and there are alot of those. I don't think thats right....
                                                 
                     if ($finalout.count -gt 1){     
                     new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
