@@ -112,10 +112,14 @@
                     $sketch= @()
                     
                     foreach ($a in $allproperties){
+                        if ($a.name -eq "propertyflagged"){
+                            continue
+                        }
+                        $a.name
 
                         $props= $($($propertytable | where {$_.property -eq "$($a.name)"}) | Group-Object -Property length)
                         
-                        #Get the most common property length and find occurences where theres properties 10 chars larger 
+                        #Get the most common property length and find occurences where theres properties 10 chars larger
                         if ($props.name.count -ge 2){
                             [int]$commonprop= $($props | sort -Descending -Property count)[0].name
                             $prop= @()
@@ -126,21 +130,21 @@
                                     $prop+= $p
                                 }
                             }
-                        }
+                        
 
-                        foreach ($p in $prop){
-                            $propertyflagged= "$($a.name)-Length was $($p.name). Common length was $commonprop"
-                            $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
-                            
-                            
-                            foreach ($subproperty in $p){                                   
-                                $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
-                                $hit;pause
+                            foreach ($p in $prop){
+                                $propertyflagged= "$($a.name)-Length was $($p.name). Common length was $commonprop"
+                                $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
                                 
-                                foreach ($h in $hit){
-                                   $h.propertyflagged = $propertyflagged
-                                   $h= $h | ConvertTo-Json
-                                   $sketch+= $h                                   
+                                
+                                foreach ($subproperty in $p){                                   
+                                    $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
+                                    foreach ($h in $hit){
+                                    $h.propertyflagged = $propertyflagged
+                                    $h= $h | ConvertTo-Json
+                                    $sketch+= $h 
+                                    $sketch.Count                                  
+                                    }
                                 }
                             }
                         }
