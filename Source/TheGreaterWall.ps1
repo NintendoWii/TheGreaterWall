@@ -1090,6 +1090,7 @@ function tgw ($rawcommand){
             Header
             Write-Output " "
             Write-Output "Warning Only $results results sets available to analyze. You should have at least 3 results sets. Your analysis will be weak!"
+            Write-output "If you have Active Directory results, those will still be analyzed with no issues."
             write-output " "
             pause
             $results= 3
@@ -1570,7 +1571,7 @@ function tgw ($rawcommand){
             write-output "[The Greater Wall] has the capability to threat hunt on multiple information systems.]`n"
             write-output "Do you have a list of IP addresses?`n"
             write-output "1.) Yes, I have a .txt with a list of IP addresses."
-            write-output "2.) No, I would like to enter IP addresses individually."
+            write-output "2.) No, I would like to use the IP Address entry tool"
             write-output " "
         
             $listofips= read-host -prompt "#TheGreaterWall"
@@ -1593,8 +1594,10 @@ function tgw ($rawcommand){
                 write-output "    Example: x.x.x.x, x.x.x.x, x.x.x.x`n"
                 write-output "    Example: x.x.x.x/24`n"
                 write-output "    Example: x.x.x.[1-15]`n"
+                Write-output "    Example: x.x.x.x,x.x.x.x/24,x.x.x.[1-15]"
+                write-output " "
                 $listofips= $(Read-Host -Prompt "#TheGreaterWall")
-                $listofips= $listofips.split(',').replace('"',"")       
+                $listofips= $listofips.split(',').replace('"',"").TrimStart().trimend()       
                 $allips= @()                   
 
                 #calculate IPs from CIDR
@@ -1693,6 +1696,7 @@ function tgw ($rawcommand){
             clear-host
 
             Header
+            write-output "[Warning] No Credentials detected"
             Write-Output "Do you wish to use credentials?`n"
             write-output "1.) Yes"
             Write-Output "2.) No`n"
