@@ -676,14 +676,251 @@ function tgw ($rawcommand){
             }
         }
 
-        #function Reformat-ActiveDirectoryinfo{
-        #    $activedirectoryfile= $(Get-ChildItem $env:userprofile\Desktop\TheGreaterWall\Results\ActiveDirectoryEnumeration*).fullname
-
     ################
     #Start Analysis#
     ################
-         
+        Function identify-ActiveDirectoryOutlyers{
+            $start= get-date
+            new-item -ItemType Directory -Path $postprocessingpath\AnalysisResults -name OutlyerAnalysis -ErrorAction SilentlyContinue | out-null
+            remove-variable -Name refinedoutput -Force -ErrorAction SilentlyContinue
+            remove-variable -name output -Force -ErrorAction SilentlyContinue
         
+            if (!$moduleconfiguration){
+                $moduleconfiguration= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\Modules\Modules.conf | Convertfrom-csv -Delimiter :
+                New-Variable -name obj -Value $($moduleconfiguration) -Force -ErrorAction SilentlyContinue
+            }
+                    
+            if ($moduleconfiguration){
+                #parse File for selected data
+                $settings= $obj | where {$_.p1 -eq "ActiveDirectoryEnumeration"}
+                $sortproperties= $($settings | where {$_.p2 -eq "Pivot"}).p3                
+        
+                #get contents of file
+                $path= "$postprocessingpath\RawData\all_activedirectoryEnumeration.csv"
+                $output= get-content $path -ErrorAction SilentlyContinue
+                                        
+                if (!$output){
+                    Write-Host "[Warning] no Active Directory file" -ForegroundColor Red
+                }
+                        
+                if ($output){
+                    $refinedoutput= $output | ConvertFrom-Csv
+                            
+                    foreach ($r in $refinedoutput){            
+                        $r.groups = $r.groups-replace(',','|')
+                        #pad NULL into places where the original collection script didnt
+                        $needs_null= $($r | gm | where {$_.definition -like "*="}).name
+        
+                        foreach ($n in $needs_null){
+                            $r.$n = "NULL"
+                        }
+                    }
+        
+                    $refinedoutput | Add-Member -NotePropertyName Propertyflagged -NotePropertyValue "NULL"
+                    $refinedoutput | Add-Member -NotePropertyName Valueflagged -NotePropertyValue "NULL"
+                    $refinedoutput | Add-Member -NotePropertyName FlagDescription -NotePropertyValue "NULL"
+                    $accounts= $refinedoutput.samaccountname
+        
+                    #define number of useraccounts as half of the total count
+                    $numberofuseraccounts= $($refinedoutput.samaccountname.count)/2
+                                
+                    #round up if decimal
+                    if ($numberofuseraccounts.ToString() | select-string "\."){
+                        $numberofuseraccounts= $($numberofuseraccounts.tostring().split("\."))[0]
+                        $numberofuseraccounts= [int]$numberofuseraccounts+1
+                    }
+                                            
+                    $finalout= @()
+                    #find only lone occurences of true/false values
+                                
+                    foreach ($sortproperty in $sortproperties){    
+                        $sketch= @()                
+                        $result= $refinedoutput | Group-Object -Property $sortproperty                        
+                        $result= $result | where {$_.count -le $numberofuseraccounts}
+                        $propertyflagged= $sortproperty
+                            
+                        foreach ($i in $result.group){
+                            $i.Propertyflagged = $propertyflagged
+                            $i.Valueflagged = $i.$propertyflagged
+                            $i.FlagDescription = "Outlying true/false value"
+                            $i= $i | ConvertTo-Json
+                            $sketch+= $i
+                        }                    
+                                
+                        $finalout+= $sketch
+                    }                        
+                            
+                    #grab all properties
+                    $allproperties= $($refinedoutput[0] | get-member | where {$_.membertype -eq "noteproperty"})
+        
+                    #find occurences where the majority of the values are "NULL", but some aren't and vice versa
+                    $nullproperties= $($allproperties | where {$_.definition -like "*=NULL"}).name | sort -unique
+        
+                    foreach ($nullproperty in $nullproperties){    
+                        $sketch= @()                
+                        $result= $refinedoutput | Group-Object -Property $nullproperty
+        
+                        if ($($result | where {$_.name -eq "Null"}).count -ge $numberofuseraccounts){                   
+                            $result= $result | where {$_.count -le $numberofuseraccounts}
+                            $propertyflagged= "$nullproperty"
+                            $reason= "Value was not NULL when most others were NULL"
+                        }
+        
+                        if ($($result | where {$_.name -eq "Null"}).count -le $numberofuseraccounts){                   
+                            $result= $result | where {$_.name -eq "Null"}
+                            $propertyflagged= "$nullproperty"
+                            $reason= "Value was NULL when most others were not NULL"
+                        }
+                                
+                        if ($result){
+                        
+                            foreach ($i in $result.group){
+                                $i.Propertyflagged = $propertyflagged
+                                $i.Valueflagged = $i.$propertyflagged
+                                $i.FlagDescription = $reason
+                                $i= $i | ConvertTo-Json
+                                $sketch+= $i
+                            }                                                        
+                            
+                            $finalout+= $sketch
+                        }  
+                    }
+                        
+                    #look for abnormally long values
+                    $sketch= @()
+                    $propertytable= @()
+                    $propertytable+= "property,value,Length"
+                    $allprops= $allproperties.name
+        
+                    foreach ($r in $refinedoutput){
+                                
+                        foreach ($a in $allprops){
+                            $value= $r.$a.tostring()
+                            $propertytable+= "$a,$value,$($value.length)"
+                        }
+                    }
+        
+                    $propertytable= $propertytable | convertfrom-csv
+                            
+                    foreach ($a in $allproperties){
+                    
+                        if ($a.name -eq "propertyflagged"){
+                            continue
+                        }
+        
+                        if ($a.name -eq "valueflagged"){
+                            continue
+                        }
+        
+                        $props= $($($propertytable | where {$_.property -eq "$($a.name)"}) | Group-Object -Property length)                       
+                        
+                        #Get the most common property length and find occurences where theres properties 10 chars larger
+                        if ($props.name.count -ge 2){
+                            [int]$commonprop= $($props | sort -Descending -Property count)[0].name
+                            $prop= @()
+        
+                            foreach ($p in $props){
+                            
+                                if ([int]$p.name -ge $($commonprop + 10)){
+                                    $prop+= $p
+                                }
+                            }                        
+        
+                            foreach ($p in $prop){
+                                $propertyflagged= "$($a.name)-Length"
+                                $p= $($propertytable | where {$_.length -eq "$($p.name)" -and $_.property -eq "$($a.name)"}).value | sort -Unique
+                                                                      
+                                foreach ($subproperty in $p){                                   
+                                    $hit= $($refinedoutput | where {$_.$($a.name) -eq "$subproperty"})
+                                    foreach ($h in $hit){
+                                        $h.propertyflagged = $propertyflagged
+                                        $h.valueflagged = $subproperty
+                                        $h.flagdescription = "Length of value longer than normal"
+                                        $h= $h | ConvertTo-Json
+                                        $sketch+= $h                               
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $finalout+= $sketch
+                }
+        
+                #look for Characters that might be out of the bounds of normal
+                $sketch= @()
+                $allproperties= $allproperties | where {$_.name -ne "Propertyflagged"}
+                $allproperties= $allproperties | where {$_.name -ne "valueflagged"}
+                $allproperties= $allproperties | where {$_.name -ne "FlagDescription"}
+                
+                foreach ($property in $allproperties){
+                    $properties= $refinedoutput.$($property.name)
+                    $properties= $properties | where {$_ -ne 'NULL'}
+                    
+                    if ($properties){
+                        $table= @()
+                        $table+= "value,low,high"
+           
+                        foreach ($p in $properties){
+                            $value= $p
+                        
+                            if ($value){
+                                $p= $p.tochararray()
+                                $p= $p | % {[byte]$_}
+                                $p= $p | sort -Descending | sort -Unique | where {$_}
+                                $high= $p[-1]
+                                $low= $p[0]
+                                $table+= "$value,$low,$high"
+                            }
+                        }
+                
+                        $table= $table | convertfrom-csv
+                        [int]$normal_low= $($table | Group-Object -Property low | sort -Descending -Property Count)[0].name
+                        [int]$normal_high= $($table | Group-Object -Property high | sort -Descending -Property Count)[0].name
+            
+                        $lowhits= $($table | Group-Object -Property low | where {[int]$_.name -lt $normal_low -and $_.count -le 20}).group.value | sort -Unique
+                        $highhits= $($table | Group-Object -Property high | where {[int]$_.name -gt $normal_high -and $_.count -le 20}).group.value | sort -Unique
+                        
+                        if ($lowhits){
+                            foreach ($h in $lowhits){
+                                $hit= $refinedoutput | where {$_.$($property.name) -eq $h}                    
+                                $description= [char][int]$($table | where {$_.value -eq "$h"} | sort -Unique).low
+        
+                                foreach ($i in $hit){
+                                    $i.propertyflagged = "$($property.name)"
+                                    $i.Valueflagged = "$h"                        
+                                    $i.FlagDescription = "The character ($description) was present in value" 
+                                    $sketch+= $i | ConvertTo-Json
+                                }
+                            }
+                        }
+                        
+                        if ($highhits){        
+                            foreach ($h in $highhits){
+                                $hit= $refinedoutput | where {$_.$($property.name) -eq $h}
+                                $description= [char][int]$($table | where {$_.value -eq "$h"} | sort -Unique).high
+        
+                                foreach ($i in $hit){
+                                    $i.propertyflagged = "$($property.name)"
+                                    $i.Valueflagged = "$h"
+                                    $i.FlagDescription = "The character ($description) was present in value" 
+                                    $sketch+= $i | ConvertTo-Json
+                                }
+                            }            
+                        }
+                    }
+                    $finalout+= $sketch
+                }
+                
+                $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged
+             
+                new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
+                $finalout= $finalout | ConvertTo-Csv -NoTypeInformation
+                $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
+                $end= Get-Date               
+            }
+        }  
+                 
+                
         Function identify-outlyers ($inputdata){
             $start= get-date
             new-item -ItemType Directory -Path $postprocessingpath\AnalysisResults -name OutlyerAnalysis -ErrorAction SilentlyContinue | out-null
@@ -859,15 +1096,25 @@ function tgw ($rawcommand){
         }
 
         if ($results -ge 3){
-            $validinputdata= $(Get-Content $env:userprofile\desktop\thegreaterwall\modules\Modules.conf | convertfrom-csv -Delimiter :).p1 | sort -Unique
-            
+            $validinputdata= $(Get-Content $env:userprofile\desktop\thegreaterwall\modules\Modules.conf | convertfrom-csv -Delimiter :).p1 | sort -Unique            
+
             foreach ($v in $validinputdata){
                 write-output "$(get-date)-- Identifying outlyers for $v"
                 $start= get-date
-                identify-outlyers $v
-                $end= Get-Date
-                $seconds= calculate-time $start $end
-                write-host "$(get-date)-- [Done] Identifying outlyers for $v-- $seconds" -ForegroundColor Green
+
+                if ($v -eq "ActiveDirectoryEnumeration"){
+                    identify-ActiveDirectoryOutlyers
+                    $end= Get-Date
+                    $seconds= calculate-time $start $end
+                    write-host "$(get-date)-- [Done] Identifying outlyers for $v-- $seconds" -ForegroundColor Green
+                }
+
+                if ($v -ne "ActiveDirectoryEnumeration"){
+                    identify-outlyers $v
+                    $end= Get-Date
+                    $seconds= calculate-time $start $end
+                    write-host "$(get-date)-- [Done] Identifying outlyers for $v-- $seconds" -ForegroundColor Green
+                }
             }
         }
     
