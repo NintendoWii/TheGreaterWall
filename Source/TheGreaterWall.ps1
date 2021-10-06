@@ -1368,7 +1368,16 @@ function tgw ($rawcommand){
                     $displaynames= $file | % {"Powershell Message Hash - $($_.name-replace('.txt',''))"}
 
                     $choice= $displaynames | Out-GridView -Title "Multiple results found. Please Choose one." -PassThru
-                    $choice= $choice.tostring().split('-')[1].trimstart(' ') + '.txt'
+                    
+                    if ($choice -notlike "*collection*"){
+                        $choice= $choice.tostring().split('-')[1].trimstart(' ') + '.txt'
+                    }
+
+                    if ($choice -like "*collection*"){
+                        $choice= $choice.tostring().split('-')[1].trimstart(' ')
+                        $choice= $choice-replace('.collection','.txt.collection')
+                    }
+
                     $choice= $file | where {$_.name -eq "$choice"}
                     notepad $choice.fullname
                     $done= 1
