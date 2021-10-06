@@ -1315,11 +1315,10 @@ function tgw ($rawcommand){
         remove-variable -Name done -Force -ErrorAction SilentlyContinue        
         $helppage= Get-ChildItem $env:userprofile\desktop\thegreaterwall\modules\module_help_pages | where {$_.name -like "*$query*"}
         $powershellMasterRef= Get-ChildItem $env:userprofile\desktop\thegreaterwall\tgwlogs\PowerShell_Master_Reference | where {$_.name -like "*$query*"}
-
         $query= "$query" + ".txt"
 
         #If the query term is found in both the helpdoc and the powershell master reference, prompt the user for clarification
-        if ($helppage -and $powershellMasterRef){
+        if ($helppage -and $powershellMasterRef -or !$query){
             clear-host
             write-output "Is $($query-replace('.txt','')) in reference to a powershell log?"
             write-output "1.) Yes"
@@ -1345,9 +1344,11 @@ function tgw ($rawcommand){
             if ($file.count -gt 1){
                 $displaynames= $file | % {"$msg - $($_.name-replace('.txt',''))"}
                 $choice= $displaynames | Out-GridView -Title "Multiple results found. Please Choose one." -PassThru
-                $choice= $choice.tostring().split('-')[1].trimstart(' ') + '.txt'
-                $choice= $file | where {$_.name -eq "$choice"}
-                notepad $choice.fullname
+                if ($choice){
+                    $choice= $choice.tostring().split('-')[1].trimstart(' ') + '.txt'
+                    $choice= $file | where {$_.name -eq "$choice"}
+                    notepad $choice.fullname
+                }
                 $done= 1
             }                
         }
@@ -1364,19 +1365,24 @@ function tgw ($rawcommand){
                     $displaynames= $file | % {"Powershell Message Hash - $($_.name-replace('.txt',''))"}
 
                     $choice= $displaynames | Out-GridView -Title "Multiple results found. Please Choose one." -PassThru
+                    if ($choice){
+                        if ($choice -notlike "*collection*"){
+                            $choice= $choice.tostring().split('-')[1].trimstart(' ') + '.txt'
+                        }
+    
+                        if ($choice -like "*collection*"){
+                            $choice= $choice.tostring().split('-')[1].trimstart(' ')
+                            $choice= $choice-replace('.collection','.txt.collection')
+                        }
+    
+                        $choice= $file | where {$_.name -eq "$choice"}
                     
-                    if ($choice -notlike "*collection*"){
-                        $choice= $choice.tostring().split('-')[1].trimstart(' ') + '.txt'
+                        if ($choice){
+                            notepad $choice.fullname
+                    
+                        }
+                        $done= 1
                     }
-
-                    if ($choice -like "*collection*"){
-                        $choice= $choice.tostring().split('-')[1].trimstart(' ')
-                        $choice= $choice-replace('.collection','.txt.collection')
-                    }
-
-                    $choice= $file | where {$_.name -eq "$choice"}
-                    notepad $choice.fullname
-                    $done= 1
                 }
         }
         
@@ -1397,6 +1403,7 @@ function tgw ($rawcommand){
                     notepad $choice.fullname
                     $done= 1
                 }
+
         }
 
         if (!$helppage -and !$powershellMasterRef){
@@ -2310,7 +2317,7 @@ function tgw ($rawcommand){
                 $query= $($action.split(' '))[1]
                 clear-host
                 header
-                whatis "$query"
+                whatis "$query"                
                 Write-Host " "              
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
