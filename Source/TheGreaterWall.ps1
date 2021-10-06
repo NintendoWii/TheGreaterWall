@@ -589,10 +589,8 @@ function tgw ($rawcommand){
 
         function ExtractCSVFrom-PowerShellLogs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"})
-            $logs= gci .\pslogs.txt
-            #for debugging purposes, I need to alster the sid, otherwise we get no results
-            #$analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
-            $analystsid= 0
+            $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            
 
             foreach ($l in $logs){
                 $log= get-content $l.fullname
@@ -615,10 +613,8 @@ function tgw ($rawcommand){
 
         function cleanpowershell-logs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"}).fullname
-            $logs= gci .\pslogs.txt
-            #for debugging purposes, I need to alster the sid, otherwise we get no results
-            #$analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
-            $analystsid= 0
+            $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+
 
             foreach ($l in $logs){
                 $log= get-content $l
