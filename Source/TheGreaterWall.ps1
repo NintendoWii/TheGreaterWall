@@ -589,7 +589,10 @@ function tgw ($rawcommand){
 
         function ExtractCSVFrom-PowerShellLogs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"})
-            $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            $logs= gci .\pslogs.txt
+            #for debugging purposes, I need to alster the sid, otherwise we get no results
+            #$analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            $analystsid= 0
 
             foreach ($l in $logs){
                 $log= get-content $l.fullname
@@ -612,7 +615,10 @@ function tgw ($rawcommand){
 
         function cleanpowershell-logs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"}).fullname
-            $analystsid= $($(whoami /all | sls 'User Name         SID  ' -Context (0,3)) | convertfrom-csv | convertto-csv)[-1].split(' ')[-1].trimend('"')
+            $logs= gci .\pslogs.txt
+            #for debugging purposes, I need to alster the sid, otherwise we get no results
+            #$analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            $analystsid= 0
 
             foreach ($l in $logs){
                 $log= get-content $l
@@ -674,7 +680,63 @@ function tgw ($rawcommand){
                     }
                 }
             }
+            
+            $logobj= @()
+            $logobj+= "Ghettohash,ScriptblockID,Position,Total"
+
+            foreach ($i in $(get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\tgwlogs\Powershell_master_reference\)){
+                $filename= $i.FullName
+                $content= get-content $filename
+                $multi_scriptblock= $content | select-string 'Creating Scriptblock text \('
+                
+                if ($multi_scriptblock){                
+                    $multi_scriptblock= $multi_scriptblock-replace('"Creating Scriptblock text \(','')
+                    $multi_scriptblock= $multi_scriptblock-replace('\):"','')
+                    $multi_scriptblock= $multi_scriptblock-replace(' of ','&')
+                    [int]$position= $multi_scriptblock.tostring().split('&')[0]
+                    $total= $multi_scriptblock.tostring().split('&')[1]
+                    $scriptblockid= $Content[3].tostring()
+                        
+                    if ($scriptblockid -notlike "ScriptblockID= *"){
+                        $scriptblockid= $($content | select-string "ScriptblockID= ").tostring()
+                    }
+                    $scriptblockid= $scriptblockid-replace('ScriptblockID= "ScriptBlock ID: ','')
+                    $scriptblockid= $scriptblockid-replace('"','')
+    
+                    $logobj+= "$filename,$scriptblockid,$position,$total"                    
+                }
+            }
+            
+            $logobj= $logobj | convertfrom-csv
+
+            $uniquescriptblocks= $logobj.scriptblockid | sort -Unique
+
+            foreach ($u in $uniquescriptblocks){
+                $collection= $logobj | where {$_.scriptblockid -eq "$u"}
+                $collection | % {$_.position = [int]$_.position}
+                $collection= $collection | sort -Property position
+                [int]$total= $collection.total | sort -Unique
+
+                $output= @()
+                        
+                foreach ($i in $collection){ 
+                    $filename= $i.Ghettohash                         
+                    $output+= " " 
+                    $output+= "***Scriptblock $($i.position) of $total***"
+                    $output+= " "
+                    $output+= $(get-content $filename)
+                 } 
+
+                foreach ($i in $collection){      
+                    $filename= $i.Ghettohash                       
+                    $outputfile= $filename + ".collection"
+                    $output >$outputfile
+                }
+            }
+
         }
+    
+
 
     ################
     #Start Analysis#
@@ -1009,6 +1071,7 @@ function tgw ($rawcommand){
         #Reformat all datasets#
         #######################
         clear-host
+        pause
         write-output "Reformatting datasets"
         $totalstart= get-date
         $start= get-date
