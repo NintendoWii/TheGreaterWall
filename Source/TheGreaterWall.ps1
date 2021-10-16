@@ -60,105 +60,109 @@ function tgw ($rawcommand){
 
     #Imports the raw bytes of the .dll needed to query AD without having DStools installed 
     function Import-ActiveDirectory{
-        clear-host
-        header
-        write-output "In order to run the Active Directory Module, you must Specify the IP of the Domain Controller."
-        write-output "If you don't need to run the Active Directory Module, you can skip this."
-        write-output " "
-        Write-output "1. Continue"
-        write-output "2. Skip"
-        $choice= read-host -Prompt " "
-        clear-host
-
-        if ($choice -eq "2"){
-            write-output "Skipping Active Directory"
-            start-sleep -Seconds 1
+        if ($activedirectoryconfiguration -eq "0"){
             clear-host
-        }
-
-        if ($choice -ne "1" -and $choice -ne "2"){
-            write-output "Invalid choice"
-            start-sleep -Seconds 1
-            Import-ActiveDirectory
-        }
-
-        if ($choice -eq "1"){
             header
-            write-output "Please Enter the IP of the Domain Controller"
-            new-variable -name domaincontrollerip -value $(read-host -prompt " ") -scope global -force -ErrorAction SilentlyContinue
-            clear-host    
-                
-            header
-            Write-output "You'll need to provide the credentials to the Domain Controller."
+            write-output "In order to run the Active Directory Module, you must Specify the IP of the Domain Controller."
+            write-output "If you don't need to run the Active Directory Module, you can skip this."
+            write-output " "
             Write-output "1. Continue"
             write-output "2. Skip"
             $choice= read-host -Prompt " "
             clear-host
-        
-            
+
+            if ($choice -eq "2"){
+                write-output "Skipping Active Directory"
+                start-sleep -Seconds 1
+                new-variable -name activedirectoryconfiguration -Value "1" -Scope global -ErrorAction SilentlyContinue
+                clear-host
+            }
+
             if ($choice -ne "1" -and $choice -ne "2"){
                 write-output "Invalid choice"
-                Start-Sleep -Seconds 2
+                start-sleep -Seconds 1
                 Import-ActiveDirectory
             }
 
-            if ($choice -eq "2"){
-                clear-host
-                write-output "Skipping Active Directory"
-                start-sleep -Seconds 1
-            }
-
             if ($choice -eq "1"){
-                new-variable -name DCcreds -Value $(get-credential) -Scope global -force -ErrorAction SilentlyContinue
-                $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-
-                if (!$dcsesh){
-                    clear-host
-                    Write-Output "Authentication failed. Please try again."
-                    sleep 2
+                header
+                write-output "Please Enter the IP of the Domain Controller"
+                new-variable -name domaincontrollerip -value $(read-host -prompt " ") -scope global -force -ErrorAction SilentlyContinue
+                clear-host    
+                    
+                header
+                Write-output "You'll need to provide the credentials to the Domain Controller."
+                Write-output "1. Continue"
+                write-output "2. Skip"
+                $choice= read-host -Prompt " "
+                clear-host
+        
+            
+                if ($choice -ne "1" -and $choice -ne "2"){
+                    write-output "Invalid choice"
+                    Start-Sleep -Seconds 2
                     Import-ActiveDirectory
-                   } 
+                }
 
-                if ($dcsesh){
-                    $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                if ($choice -eq "2"){
+                    clear-host
+                    write-output "Skipping Active Directory"
+                    new-variable -name activedirectoryconfiguration -Value "1" -Scope global -ErrorAction SilentlyContinue
+                    start-sleep -Seconds 1
+                }
+
+                if ($choice -eq "1"){
+                    new-variable -name DCcreds -Value $(get-credential) -Scope global -force -ErrorAction SilentlyContinue
+                    $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
+    
+                    if (!$dcsesh){
+                        clear-host
+                        Write-Output "Authentication failed. Please try again."
+                        sleep 2
+                        Import-ActiveDirectory
+                    } 
+
+                    if ($dcsesh){
+                        $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                        if ($ad){
+                            Clear-Host
+                            write-output "Active Directory module already loaded."
+                            start-sleep -Seconds 1
+                        }
+    
+                        if (!$ad){
+                            clear-host
+                            Write-output "Loading Active Directory module."
+                            start-sleep -Seconds 1
+                            Import-Module -PSSession $dcsesh -name activedirectory
+                            $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                        }
+
+                        Remove-PSSession -name dcsesh
+                    }
+
                     if ($ad){
-                        Clear-Host
-                        write-output "Active Directory module already loaded."
-                        start-sleep -Seconds 1
+                        clear-host                    
+                        write-output "Successfully imported the Active Directory Module."
+                        new-variable -name activedirectoryconfiguration -Value "1" -Scope global -ErrorAction SilentlyContinue
+                        sleep 2
                     }
 
                     if (!$ad){
                         clear-host
-                        Write-output "Loading Active Directory module."
-                        start-sleep -Seconds 1
-                        Import-Module -PSSession $dcsesh -name activedirectory
-                        $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
+                        header
+                        Write-Host "[ERROR]" -ForegroundColor Red
+                        write-output "Active Directory import failed. Connection to remote server was successful though."
+                        write-output " "
+                        write-output "-Please try again, and be sure that the IP and Credentials you provide are indeed for a Domain Controller and not just a regular workstation."
+                        write-output " "
+                        pause
+                        Import-ActiveDirectory
                     }
-
-                    Remove-PSSession -name dcsesh
-                }
-
-                if ($ad){
-                    clear-host                    
-                    write-output "Successfully imported the Active Directory Module."
-                    sleep 2
-                }
-
-                if (!$ad){
-                    clear-host
-                    header
-                    Write-Host "[ERROR]" -ForegroundColor Red
-                    write-output "Active Directory import failed. Connection to remote server was successful though."
-                    write-output " "
-                    write-output "-Please try again, and be sure that the IP and Credentials you provide are indeed for a Domain Controller and not just a regular workstation."
-                    write-output " "
-                    pause
-                    Import-ActiveDirectory
                 }
             }
         }
     }
-
     #Tests the WINRM connectivity to the target IPs
     function get-wsmanconnection ($listofips){
         if ($completedconnectiontest -ne "Yes"){
@@ -1067,7 +1071,6 @@ function tgw ($rawcommand){
         #Reformat all datasets#
         #######################
         clear-host
-        pause
         write-output "Reformatting datasets"
         $totalstart= get-date
         $start= get-date
@@ -1093,7 +1096,10 @@ function tgw ($rawcommand){
         $filename= $file.fullname
         $name= $file.name-replace('.txt','')
         $outputdirectory= get-childitem $postprocessingpath | where {$_.name -like "*ActiveDirectory*"}
-        copy-item -Path $filename -Destination $outputdirectory\$name-postprocessed.csv
+
+        if ($outputdirectory){
+            copy-item -Path $filename -Destination $outputdirectory\$name-postprocessed.csv -ErrorAction SilentlyContinue
+        }
         
         #do the rest
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
@@ -1963,9 +1969,11 @@ function tgw ($rawcommand){
     #Import AD DLL
     $ad= $(get-module).name | where {$_ -like "*activedirectory*"}
     if (!$ad){
-        
-        import-activedirectory      
-        clear-host
+
+        if ($activedirectoryconfiguration -ne 0){
+            import-activedirectory      
+            clear-host
+        }
     }
 
     #Prompt the user for the target IP Addresses
@@ -2213,6 +2221,13 @@ function tgw ($rawcommand){
             if ($action -eq "reset-ips"){
                 clear-host
                 get-ipaddresses
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+            }
+
+            if ($action -eq "reset-activedirectoryconfig"){
+                clear-host
+                $activedirectoryconfiguration= 0
+                Import-ActiveDirectory
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
         
