@@ -671,7 +671,7 @@ function tgw ($rawcommand){
             $logobj= @()
             $logobj+= "Ghettohash,ScriptblockID,Position,Total"
 
-            foreach ($i in $(get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\tgwlogs\Powershell_master_reference\)){
+            foreach ($i in $(get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\tgwlogs\Powershell_master_reference\ | where {$_.name -notlike "*.collection"})){
                 $filename= $i.FullName
                 $content= get-content $filename
                 $multi_scriptblock= $content | select-string 'Creating Scriptblock text \('
@@ -717,7 +717,10 @@ function tgw ($rawcommand){
                 foreach ($i in $collection){      
                     $filename= $i.Ghettohash                       
                     $outputfile= $filename + ".collection"
-                    $output >$outputfile
+                    
+                    if (!$(Test-Path $outputfile)){
+                        $output >$outputfile
+                    }
                 }
             }
 
