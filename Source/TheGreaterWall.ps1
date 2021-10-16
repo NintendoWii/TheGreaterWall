@@ -524,43 +524,26 @@ function tgw ($rawcommand){
 
         function cleanup-headers{
             #clean up the headers
+            write-output "Re-applying headers"
             $path= "$postprocessingpath\RawData"
             $files= Get-ChildItem $path
 
             $configuration= get-content $env:userprofile\Desktop\thegreaterwall\modules\modules.conf | convertfrom-csv -Delimiter :
 
             foreach ($file  in $files){
-                $name= $file.fullname
-                $output= @()
-                
-                $filename= $file-replace('all_','')-replace('.csv','')        
-                
+                $fullname= $file.fullname
+                $filename= $file-replace('all_','')-replace('.csv','')          
                 $conf= $configuration | Where {$_.p1 -eq $filename}
                 $header= $($conf | where {$_.p2 -eq "csvheader"}).p3.tostring()
-
+                $alt_header= $header-replace(',','","')
+                $alt_header= '"' + $alt_header + '"'
+            
+                #reapply headers to postprocessed datasets
                 if ($header -ne 'LEAVE-ORIGINAL'){
-                    $content= Get-Content $name
-        
-                    $output+= $header
-                    $output+= $content
-            
-                    $output >$name
-                }
-            }
-            
-            #reapply headers to postprocessed datasets
-            if ($header -ne 'LEAVE-ORIGINAL'){
-                $files= get-childitem -recurse $postprocessingpath\*postprocessed
-                write-output "Re-applying headers"
-
-                foreach ($f in $files){
-                    $fullname= $f.fullname
-                    $module= $f.name.split('-')[0]
-                    $conf= $configuration | Where {$_.p1 -eq $module}
-    
+                    
+                        
                     if ($conf){
-                        $header= $($conf | where {$_.p2 -eq "csvheader"}).p3.tostring()
-                        $content= get-content $fullname
+                        $content= get-content $fullname | where {$_ -ne $header -and $_ -ne $alt_header}
                         $output= @()
                         $output+= $header
                         $output+= $content
@@ -594,6 +577,8 @@ function tgw ($rawcommand){
         function ExtractCSVFrom-PowerShellLogs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"})
             $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            #For debugging purposes, uncomment the next line
+            $analystsid= 0
             
 
             foreach ($l in $logs){
@@ -618,6 +603,8 @@ function tgw ($rawcommand){
         function cleanpowershell-logs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"}).fullname
             $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            #For debugging purposes, uncomment the next line
+            $analystsid= 0
 
 
             foreach ($l in $logs){
@@ -689,7 +676,7 @@ function tgw ($rawcommand){
                 $content= get-content $filename
                 $multi_scriptblock= $content | select-string 'Creating Scriptblock text \('
                 
-                if ($multi_scriptblock){                
+                if ($multi_scriptblock){  
                     $multi_scriptblock= $multi_scriptblock-replace('"Creating Scriptblock text \(','')
                     $multi_scriptblock= $multi_scriptblock-replace('\):"','')
                     $multi_scriptblock= $multi_scriptblock-replace(' of ','&')
