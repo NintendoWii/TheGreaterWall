@@ -1946,6 +1946,7 @@ function tgw ($rawcommand){
     setup-framework
 
     #Process raw commands if they are issued by the user
+
     if ($rawcommand -eq "postprocess"){
         clear-host
         postprocessor
