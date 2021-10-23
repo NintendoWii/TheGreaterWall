@@ -18,7 +18,7 @@ function SecurityLog4688{
 
     $output= @()
 
-    $EventId4688 = Get-EventLog -LogName Security | where -FilterScript {$_.EventID -eq "4688"}
+    $EventId4688 = Get-EventLog -LogName Security -newest 1000 | where -FilterScript {$_.EventID -eq "4688"}
     
     $Hostname= $env:COMPUTERNAME
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
