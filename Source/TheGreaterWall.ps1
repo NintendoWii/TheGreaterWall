@@ -343,7 +343,7 @@ function tgw ($rawcommand){
                                     $($status | where {$_.computername -eq $($j.name)}).WinRM="Failed"
                                 }
                  
-                                $j | remove-job -force                                
+                                $j | remove-job -force                                points
                             }
                         }                
                     }
@@ -353,7 +353,7 @@ function tgw ($rawcommand){
                 
                 if ($unreachable){
                     clear-host
-                    write-output "Warning. The following endpoints are unreachable. No modules will be attempted on these IPs."
+                    write-output "Warning. The following endpoints are unreachable. No modules will be attempted on these endpoints."
                     $unreachable | format-table
                     write-output " "
                     pause
@@ -1186,8 +1186,8 @@ function tgw ($rawcommand){
         write-output "            ****Interactive-mode****"
         write-output " "
         $endpoints= $listofips
-        write-output "1.) Choose IP From list"
-        write-output "2.) Enter IP manually"
+        write-output "1.) Choose endpoint From list"
+        write-output "2.) Enter IP or hostname manually"
         $choice= Read-Host -Prompt " "
 
         if ($choice -ne "1" -and $choice -ne "2"){
@@ -1420,9 +1420,11 @@ function tgw ($rawcommand){
         write-output 'Command= "whatis"                 Description= Allows user to search message hashes for powershell logs or man page for a module (ex: whatis 8850, whatis prefetch)'
         write-output 'Command= "show-creds"             Description= Shows username and credential info that you previously defined'            
         write-output 'Command= "reset-creds"            Description= Allows you to repeat the part where you input the credentials'
-        write-output 'Command= "show-ips"               Description= Shows list of IP addresses that you previously defined'
-        write-output 'Command= "reset-ips"              Description= Allows you to repeat the part where you input the credentials'
-        write-output 'Command= "hail-mary"              Description= Runs all modules on all IPs, immediately'
+        write-output 'Command= "show-targets"           Description= Shows list of IPs or hostnames that you previously defined'
+        write-output 'Command= "add-target"             Description= undeveloped. Do not use this admin command'
+        write-output 'Command= "remove-target"          Description= Shows list of IPs or hostnames that you previously defined'
+        write-output 'Command= "reset-targets"          Description= Allows you to repeat the part where you input the IPs or hostnames'
+        write-output 'Command= "hail-mary"              Description= Runs all modules on all targets, immediately'
         write-output 'Command= "tgw"                    Description= pops back into the framework, all user defined parameters are persistent'
         write-output 'Command= "go-interactive"         Description= Go into an interactive shell on an endpoint of your choosing'
         write-output 'Command= "run-connectiontest"     Description= Test WinRM connection for all endpoints, or specific endpoints'
@@ -1555,7 +1557,130 @@ function tgw ($rawcommand){
         }
         new-variable -name modstatus -value $($status | convertfrom-csv | sort -Property "Config present in Modules.conf" -Descending) -Scope global -ErrorAction SilentlyContinue
     }
-  
+
+    #Allows user to remove specified IPs from list of targets
+    function remove-target{
+    clear-host
+    header
+    write-output " "
+    Write-Output "***Removing targets***"
+    Write-Output " "
+    write-output "Please choose from the options below."
+    Write-Output " " 
+    $endpoints= $listofips
+    write-output "1.) Choose endpoint From list"
+    write-output "2.) Enter IP manually"
+    Write-Output "3.) Enter Hostname manually"
+    Write-Output "4.) Go back"
+
+    $choice= Read-Host -Prompt " "
+
+    if ($choice -ne "1" -and $choice -ne "2" -and $choice -ne "3" -and $choice -ne "4"){
+        clear-host
+        write-output "Invalid selection"
+        sleep 2
+        remove-target
+    }
+
+    if ($choice -eq "1"){
+        clear-host
+        header
+        Write-output "Select a target to remove."
+        $x= 1
+        $choicecontainer= @()
+        $endpoints | % {$choicecontainer+= $_}
+        $options= $endpoints | % {"$x.) $_"; $x++}
+        $options
+        $selection= Read-Host -Prompt " "
+        if (!$($options | where {$_ -like "$selection.)*"} -ErrorAction SilentlyContinue)){
+            clear-host
+            Write-Output "Invalid selection"
+            sleep 2
+            remove-target
+        }
+          
+        [string]$selection= [int]$selection -1
+        $endpoint= $choicecontainer[$selection]
+
+        Clear-Host
+        header
+        Write-Output "Removing $endpoint"
+        Write-Output " "
+        pause
+        $listofips= $listofips | where {$_ -ne "$endpoint"}
+        Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+           
+    }
+
+    if ($choice -eq "2"){
+       $regex= "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$"
+         
+        while ($endpoint | Select-String -NotMatch -Pattern $regex -ErrorAction SilentlyContinue){
+            clear-host
+            header
+            Write-Output "Enter IP address that you wish to remove."
+            $endpoint= Read-Host -Prompt " "
+
+            if ($endpoint | Select-String -NotMatch -Pattern $regex){
+                clear-host
+                write-output "Invalid IP address. Try again."
+                sleep 2
+                remove-target
+            }
+        }
+
+        if (!$($listofips | where {$_ -eq "$endpoint"})){
+            clear-host
+            Write-Output "$endpoint was not found in list of targets. Nothing to remove."
+            sleep 2
+        }
+        
+        if ($($listofips | where {$_ -eq "$endpoint"})){   
+            Write-Output "Removing $endpoint"
+            Write-Output " "
+            pause
+            $listofips= $listofips | where {$_ -ne "$endpoint"}
+            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+        }
+
+    }
+    
+    remove-variable -name selection -ErrorAction SilentlyContinue
+
+    if ($choice -eq "3"){
+        clear-host
+        header
+        Write-Output "Enter hostname that you wish to remove."
+        $endpoint= Read-Host -Prompt " "
+
+        if (!$($listofips | where {$_ -eq "$endpoint"} -ErrorAction SilentlyContinue)){ 
+            clear-host
+            write-output "Invalid hostname. Try again."
+            sleep 2
+            remove-target
+        }
+        
+        if ($($listofips | where {$_ -eq "$endpoint"})){
+            clear-host
+            Write-Output "$endpoint was not found in list of targets. Nothing to remove."
+            sleep 2
+        }
+
+        if ($listofips | where {$_ -eq "$endpoint"}){
+            Write-Output "Removing $endpoint"
+            Write-Output " "
+            pause
+            $listofips= $listofips | where {$_ -ne "$endpoint"}
+            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+        }
+    }
+
+    if ($choice -eq "4"){
+    }
+
+clear-variable -name choice -Force -ErrorAction SilentlyContinue
+ }
+
     #Accepts user specified ip addresses in various formats, to include a file.
     function get-ipaddresses{
         function GenerateIPsFromCidr{
@@ -1635,25 +1760,41 @@ function tgw ($rawcommand){
 
         #this function outputs 2 GLOBAL variable2 named $listofips and $ipcount
 
-        if (!$listofips -or $action -eq "reset-ips"){
+        if (!$listofips -or $action -eq "reset-targets"){
             #New-Variable -name completedconnectiontest -value "No" -Force -ErrorAction SilentlyContinue -Scope global
             clear-host
             Header
-            write-output "[The Greater Wall] has the capability to threat hunt on multiple information systems.]`n"
-            write-output "Do you have a list of IP addresses?`n"
-            write-output "1.) Yes, I have a .txt with a list of IP addresses."
-            write-output "2.) No, I would like to use the IP Address entry tool"
+            write-output "[The Greater Wall has the capability to threat hunt on multiple information systems.]`n"
+            write-output "How would you like to specify the target endpoints?`n"
+            write-output "1.) I have a .txt with a list of IP addresses.(One IP per line)"
+            write-output "2.) I would like to use the IP Address entry tool."
+            write-output "3.) I have a .txt with a list of hostnames. (One hostname per line)"
+            write-output "4.) I would like to run The Greater Wall locally on this machine only."
             write-output " "
         
             $listofips= read-host -prompt "#TheGreaterWall"
             $regex= "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$"
 
+            if ($listofips -eq "3"){
+                clear-host
+                Header
+                Write-Output "Please provide the file location of the hostnames to investigate:`n"
+                Write-Output "    Example: "`""$env:USERPROFILE\Desktop\ListofHostNames.txt"`"
+                Write-Output "`n"
+                $path= read-host -prompt "#TheGreaterWall"
+                new-variable -name listofips -value $(get-content $path) -scope global -force
+            }
+
+            if ($listofips -eq "4"){
+                $listofips= "localhost"
+            }
+
             if ($listofips -eq "1"){
                 clear-host
                 Header
-                Write-Host "Please provide the file location of the IP addresses to investigate:`n"
-                Write-Host "    Example: " -NoNewline `""$env:USERPROFILE\Desktop\ListofIPaddresses.txt"`"
-                Write-Host "`n"
+                Write-Output "Please provide the file location of the IP addresses to investigate:`n"
+                Write-Output "    Example: "`""$env:USERPROFILE\Desktop\ListofIPaddresses.txt"`"
+                Write-Output "`n"
                 $path= read-host -prompt "#TheGreaterWall"
                 new-variable -name listofips -value $(get-content $path) -scope global -force
             }
@@ -1757,9 +1898,221 @@ function tgw ($rawcommand){
                     get-ipaddresses
                 }
             }
-            New-Variable -name listofips -Value $allips -Force -ErrorAction SilentlyContinue -Scope global
+
+            if ($listofips -eq "Localhost"){
+                New-Variable -name listofips -Value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+            }
+
+            if ($listofips -ne "Localhost"){
+                New-Variable -name listofips -Value $allips -Force -ErrorAction SilentlyContinue -Scope global
+            }
         }
     }
+
+    function remove-target{
+    clear-host
+    header
+    write-output " "
+    $endpoints= $listofips
+    write-output "1.) Choose endpoint From list"
+    write-output "2.) Enter IP manually"
+    Write-Output "3.) Enter Hostname manually"
+    Write-Output "4.) Go back"
+
+    $choice= Read-Host -Prompt " "
+
+    if ($choice -ne "1" -and $choice -ne "2" -and $choice -ne "3" -and $choice -ne "4"){
+        clear-host
+        write-output "Invalid selection"
+        sleep 2
+        remove-target
+    }
+
+    if ($choice -eq "1"){
+        clear-host
+        header
+        Write-output "Select a target to remove. [Ctrl+C to abort]"
+        $x= 1
+        $choicecontainer= @()
+        $endpoints | % {$choicecontainer+= $_}
+        $options= $endpoints | % {"$x.) $_"; $x++}
+        $options
+        $selection= Read-Host -Prompt " "
+        if (!$($options | where {$_ -like "$selection.)*"} -ErrorAction SilentlyContinue)){
+            clear-host
+            Write-Output "Invalid selection"
+            sleep 2
+            remove-target
+        }
+          
+        [string]$selection= [int]$selection -1
+        $endpoint= $choicecontainer[$selection]
+
+        Clear-Host
+        header
+        Write-Output "Removing $endpoint"
+        Write-Output " "
+        pause
+        $listofips= $listofips | where {$_ -ne "$endpoint"}
+        Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+           
+    }
+
+    if ($choice -eq "2"){
+       $regex= "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$"
+         
+        while ($endpoint | Select-String -NotMatch -Pattern $regex -ErrorAction SilentlyContinue){
+            clear-host
+            header
+            Write-Output "Enter IP address that you wish to remove."
+            $endpoint= Read-Host -Prompt " "
+
+            if ($endpoint | Select-String -NotMatch -Pattern $regex){
+                clear-host
+                write-output "Invalid IP address. Try again."
+                sleep 2
+                remove-target
+            }
+        }
+
+        if (!$($listofips | where {$_ -eq "$endpoint"})){
+            clear-host
+            Write-Output "$endpoint was not found in list of targets. Nothing to remove."
+            sleep 2
+        }
+        
+        if ($($listofips | where {$_ -eq "$endpoint"})){   
+            Write-Output "Removing $endpoint"
+            Write-Output " "
+            pause
+            $listofips= $listofips | where {$_ -ne "$endpoint"}
+            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+        }
+
+    }
+    
+    remove-variable -name selection -ErrorAction SilentlyContinue
+
+    if ($choice -eq "3"){
+        clear-host
+        header
+        Write-Output "Enter hostname that you wish to remove."
+        $endpoint= Read-Host -Prompt " "
+
+        if (!$($listofips | where {$_ -eq "$endpoint"} -ErrorAction SilentlyContinue)){ 
+            clear-host
+            write-output "Invalid hostname. Try again."
+            sleep 2
+            remove-target
+        }
+        
+        if ($($listofips | where {$_ -eq "$endpoint"})){
+            clear-host
+            Write-Output "$endpoint was not found in list of targets. Nothing to remove."
+            sleep 2
+        }
+
+        if ($listofips | where {$_ -eq "$endpoint"}){
+            Write-Output "Removing $endpoint"
+            Write-Output " "
+            pause
+            $listofips= $listofips | where {$_ -ne "$endpoint"}
+            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+        }
+    }
+
+    if ($choice -eq "4"){
+    }
+
+clear-variable -name choice -Force -ErrorAction SilentlyContinue
+ }
+   
+   function add-target{
+    Clear-Variable -name endpoint -Force -ErrorAction SilentlyContinue
+    clear-host
+    header
+    write-output " "
+    $endpoints= $listofips
+    write-output "1.) Enter IP manually"
+    Write-Output "2.) Enter Hostname manually"
+    Write-Output "3.) Go back"
+
+    $choice= Read-Host -Prompt " "
+
+    if ($choice -ne "1" -and $choice -ne "2" -and $choice -ne "3"){
+        clear-host
+        write-output "Invalid selection"
+        sleep 2
+        add-target
+    }
+
+    if ($choice -eq "1"){
+       $regex= "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$"
+         
+        if (!$endpoint){
+            clear-host
+            header
+            Write-Output "Enter IP address that you wish to add."
+            $endpoint= Read-Host -Prompt " "
+
+            if ($endpoint | Select-String -NotMatch -Pattern $regex){
+                clear-host
+                write-output "Invalid IP address. Try again."
+                Remove-Variable -name endpoint -Force -ErrorAction SilentlyContinue
+                sleep 2
+                add-target
+            }
+        }
+
+        if (!$($endpoint | Select-String -NotMatch -Pattern $regex)){
+
+            if ($($listofips | where {$_ -eq "$endpoint"})){
+                clear-host
+                Write-Output "$endpoint already in list of targets."
+                Remove-Variable -name endpoint -Force -ErrorAction SilentlyContinue
+                sleep 2
+            }        
+    
+            if (!$($listofips | where {$_ -eq "$endpoint"})){
+                clear-host
+                Write-Output "Adding $endpoint"
+                $listofips+= $endpoint
+                Remove-Variable -name endpoint -Force -ErrorAction SilentlyContinue
+                New-Variable -name listofips -Value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+                sleep 2
+            }  
+            remove-variable -name choice -ErrorAction SilentlyContinue   
+        }    
+    }
+
+    if ($choice -eq "2"){
+        clear-host
+        header
+        Write-Output "Enter hostname that you wish to add."
+        $endpoint= Read-Host -Prompt " "
+
+        if (!$($listofips | where {$_ -eq "$endpoint"} -ErrorAction SilentlyContinue)){ 
+            clear-host
+            write-output "Adding $endpoint."
+            $listofips= $listofips+= $endpoint
+            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+            Remove-Variable -name endpoint -Force -ErrorAction SilentlyContinue
+            sleep 2
+        }
+        
+        if ($($listofips | where {$_ -eq "$endpoint"})){
+            clear-host
+            Write-Output "$endpoint already in list of targets. Nothing to add."
+            Remove-Variable -name endpoint -Force -ErrorAction SilentlyContinue
+            sleep 2
+        }
+    }
+
+    if ($choice -eq "3"){
+    }
+
+    clear-variable -name choice -Force -ErrorAction SilentlyContinue
+ }
     
     #Prompts the user to supply credentials that will allow for the authentication required to run the powershell modules
     function get-creds{
@@ -2209,9 +2562,15 @@ function tgw ($rawcommand){
                 get-wsmanconnection $listofips
             }
 
-            if ($action -eq "reset-ips"){
+            if ($action -eq "reset-targets"){
                 clear-host
                 get-ipaddresses
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+            }
+
+            if ($action -eq "remove-target"){
+                clear-host
+                remove-target
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
 
@@ -2234,7 +2593,7 @@ function tgw ($rawcommand){
             }                        
             if ($action -eq "hail-mary"){
                 clear-host
-                write-host "You've selected HAIL-MARY. This runs all $mode modules on all IPs"
+                write-host "You've selected HAIL-MARY. This runs all $mode modules on all targets"
                 Write-Host " "
                 write-host "1.) Continue with Host Collection hail-mary"
                 write-host "1.) Continue with Event Log hail-mary"
@@ -2328,7 +2687,7 @@ function tgw ($rawcommand){
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
 
-            if ($action -eq "show-ips"){
+            if ($action -eq "show-targets"){
                 clear-host
                 $listofips
                 pause
@@ -2382,8 +2741,15 @@ function tgw ($rawcommand){
                         $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
                         $actioncode = [scriptblock]::Create($actioncode)
                         Remove-Module -name $modulename
+                            
+                        if ($listofips -eq "localhost"){
+                            $hostname= $env:COMPUTERNAME
+                            invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$action-$date" -AsJob 
+                        }
 
-                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-$a-$date" -ArgumentList $ip -AsJob                                     
+                        if ($listofips -ne "localhost"){
+                            invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-$action-$date" -AsJob 
+                        }                                  
                     }                                            
                 }            
                 remove-variable -name action -Force -ErrorAction SilentlyContinue
@@ -2458,9 +2824,15 @@ function tgw ($rawcommand){
                             $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
                             $actioncode = [scriptblock]::Create($actioncode)
                             Remove-Module -name $action
-                                
-                            invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-$action-$date" -AsJob 
+                            
+                            if ($listofips -eq "localhost"){
+                                $hostname= $env:COMPUTERNAME=
+                                invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$action-$date" -AsJob 
+                            }
 
+                            if ($listofips -ne "localhost"){
+                                invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-$action-$date" -AsJob 
+                            }
                         }
                     }                
                 }
