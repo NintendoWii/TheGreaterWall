@@ -1,6 +1,5 @@
 # The Greater Wall
-#### PowerShell - PowerShell Hunt Framework
-Customizable PowerShell Hunt and data collection framework
+#### PowerShell - PowerShell Hunt and data collection framework
 * Agentless
 * Written entirely in PowerShell
 * Customizable
