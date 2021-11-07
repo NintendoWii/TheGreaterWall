@@ -5,9 +5,6 @@
 * Customizable
 ***
 ***
-
-![Alt text](https://github.com/NintendoWii/TheGreaterWall/blob/main/images/TGW.JPG)
-
 ### Setup
 1. Download code as .zip
 2. Extract the folder
