@@ -8,7 +8,7 @@
 ### Setup
 1. Download code as .zip
 2. Extract the folder
-3. right-click setup.ps1 and choose "run with powershell"
+3. Right-click setup.ps1 and choose "run with PowerShell"
 
 At the end of the setup, an administrative PowerShell ISE window will open.
 The Greater Wall must be run in an administrative PowerShell ISE window.
