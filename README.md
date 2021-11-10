@@ -1,5 +1,6 @@
 # The Greater Wall
 * Author: Kyle Desjardins
+* Email: Thegreaterwall@gmail.com
 * Creation Date: December 2019
 * Release Date: 05 November 2021
 * Version: 2.0
