@@ -50,7 +50,7 @@ function tgw ($rawcommand){
 
     #Imports the raw bytes of the .dll needed to query AD without having DStools installed 
     function Import-ActiveDirectory{
-        if ($activedirectoryconfiguration -eq "0"){
+        if ($activedirectoryconfiguration -eq "0" -or !$activedirectoryconfiguration){
             clear-host
             header
             write-output "In order to run the Active Directory Module, you must Specify the IP of the Domain Controller."
@@ -2564,6 +2564,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
 
+            if ($action -eq "add-target"){
+                clear-host
+                add-target
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+            }
+
             if ($action -eq "reset-activedirectoryconfig"){
                 clear-host
                 $activedirectoryconfiguration= 0
@@ -2589,6 +2595,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 write-host "1.) Continue with Event Log hail-mary"
                 write-host "3.) Go back"
                 $choice= Read-Host -Prompt " "
+                clear-host
 
                 if ($choice -eq "1"){
                     $action= $(Get-childitem -Recurse $env:userprofile\Desktop\TheGreaterWall\Modules\hostcollection | where {$_.mode -like "*a*"}).name
@@ -2601,14 +2608,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     $action= $(Get-childitem -Recurse $env:userprofile\Desktop\TheGreaterWall\Modules\EventLogs | where {$_.mode -like "*a*"}).name
                     $action= $action | % {$_.tostring()-replace('.psm1','')} | Sort -Unique
                     Set-Variable -name action -value $action -force -Scope global
-                }
-
-
-                if ($choice -eq "1" -or $choice -eq "2"){
-                    $action
-                    pause
-                }
-                
+                }                
          
                 else{
                 }
@@ -2703,27 +2703,40 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 #The active directory module needs to be executed differently, because not every targeted endpoint needs to query AD. It would be too redundant.
                 
                 if ($a -like "*activedirectory*"){
-                    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-                    new-item -name $a-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
-                    $filename= "$a-$date.txt"    
-                    import-module $a
-                    import-module $a
-                    $module= get-module -name $a
-                    $modulename= $module.name
-                    $actioncode= $module.Definition
-                    $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
-                    $actioncode = [scriptblock]::Create($actioncode)
-                    Remove-Module -name $modulename
+                    
+                    if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
+                        Clear-Host
+                        header
+                        write-output "Active Directory settings aren't configured."
+                        Write-Output 'You must configure it.'
+                        pause
+                        Import-ActiveDirectory
+                    }
+
+                    if ($activedirectoryconfiguration -or $activedirectoryconfiguration -eq "1"){
+                        $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                        new-item -name $a-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
+                        $filename= "$a-$date.txt"    
+                        import-module $a
+                        import-module $a
+                        $module= get-module -name $a
+                        $modulename= $module.name
+                        $actioncode= $module.Definition
+                        $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
+                        $actioncode = [scriptblock]::Create($actioncode)
+                        Remove-Module -name $modulename
                         
-                    $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                    Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
+                        $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
+                        Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh 
+                    } 
                 }
+
 
                 else{
                     foreach ($ip in $listofips){
                         new-item -name $ip -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue     
                         $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-                        $filename= "$ip-$action-$date.txt"    
+                        $filename= "$ip-$a-$date.txt"    
                         import-module $a
                         $module= get-module -name $a
                         $modulename= $module.name
@@ -2734,11 +2747,11 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             
                         if ($listofips -eq "localhost"){
                             $hostname= $env:COMPUTERNAME
-                            invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$action-$date" -AsJob 
+                            invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$a-$date" -AsJob 
                         }
 
                         if ($listofips -ne "localhost"){
-                            invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-$action-$date" -AsJob 
+                            invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-$a-$date" -AsJob 
                         }                                  
                     }                                            
                 }            
@@ -2789,19 +2802,31 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 
                     #The active directory module needs to be executed differently, because not every targeted endpoint needs to query AD. It would be too redundant.
                     if ($action -like "*activedirectory*"){
-                        $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-                        new-item -name $action-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
-                        $filename= "$action-$date.txt"    
-                        import-module $action
-                        $module= get-module -name $action
-                        $modulename= $module.name
-                        $actioncode= $module.Definition
-                        $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
-                        $actioncode = [scriptblock]::Create($actioncode)
-                        Remove-Module -name $modulename
                         
-                        $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                        Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh                    
+                        if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
+                            Clear-Host
+                            header
+                            write-output "Active Directory settings aren't configured."
+                            Write-Output 'You must configure it.'
+                            pause
+                            Import-ActiveDirectory
+                        }
+
+                        if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
+                            $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                            new-item -name $action-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
+                            $filename= "$action-$date.txt"    
+                            import-module $action
+                            $module= get-module -name $action
+                            $modulename= $module.name
+                            $actioncode= $module.Definition
+                            $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
+                            $actioncode = [scriptblock]::Create($actioncode)
+                            Remove-Module -name $modulename
+                        
+                            $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
+                            Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
+                        }                  
                     }
 
                     else{
