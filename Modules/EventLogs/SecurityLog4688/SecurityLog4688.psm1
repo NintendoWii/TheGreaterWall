@@ -9,6 +9,7 @@ function SecurityLog4688{
             TimeGenerated= $null
             TimeWritten= $null
             ProcessName= $null
+            Processid= $null
             ParentProcessName= $null
             Commandline= $null
             ParentChildRelationship= $null
@@ -31,6 +32,7 @@ function SecurityLog4688{
         $TimeGenerated = $i.TimeGenerated
         $Timewritten = $i.TimeWritten
         $ProcessName = $i.ReplacementStrings[5]
+        $processid= [uint32]$($i.ReplacementStrings[4])
         $ParentProcessName = $i.ReplacementStrings[13]
         $CommandLine = $i.ReplacementStrings[8]
         $parentchild= $processname + " - " + $ParentProcessName
@@ -42,6 +44,7 @@ function SecurityLog4688{
         $results.TimeGenerated= $TimeGenerated
         $results.TimeWritten= $Timewritten
         $results.ProcessName= $ProcessName
+        $results.processid= $processid
         $results.ParentProcessName= $ParentProcessName
         $results.Commandline= $CommandLine
         $results.ParentChildRelationship= $parentchild
