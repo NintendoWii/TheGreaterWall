@@ -1,4 +1,9 @@
 # The Greater Wall
+* Author: Kyle Desjardins
+* Creation Date: December 2019
+* Release Date: 05 November 2021
+* Version: 2.0
+
 #### PowerShell - PowerShell Hunt and data collection framework
 * Agentless
 * Written entirely in PowerShell
