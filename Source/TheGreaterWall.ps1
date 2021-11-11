@@ -409,7 +409,9 @@ function tgw ($rawcommand){
             New-Variable -name resultspath -value $choice -Scope global -Force
             set-location $resultspath
             new-item -Path $resultspath -ItemType Directory -name "PostProcessing_$date"
-            new-item -Path $resultspath -ItemType Directory -name "Dropbox" -ErrorAction SilentlyContinue
+            
+            #this folder will be reserved for when winlogbeat support is developed
+            #new-item -Path $resultspath -ItemType Directory -name "Dropbox" -ErrorAction SilentlyContinue
         
             #find old postprocessed folder
             $oldfolders= $(Get-ChildItem $resultspath | where {$_.name -like "*postprocess*"})
