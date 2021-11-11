@@ -20,7 +20,7 @@ At the end of the setup, an administrative PowerShell ISE window will open.
 The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
-### Features that are in development
+### Coming soon
 * Winlogbeat / Security onion support
 * MITRE ATT&CK crosswalk
 * HTML Report Generation
