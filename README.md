@@ -24,3 +24,4 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 * Winlogbeat / Security Onion support
 * MITRE ATT&CK crosswalk
 * HTML Report Generation
+* More modules
