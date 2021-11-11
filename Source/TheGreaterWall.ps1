@@ -475,12 +475,12 @@ function tgw ($rawcommand){
             $ErrorActionPreference= "SilentlyContinue"
            
             #copy active directory file. This just needs to happen one time; not once for each folder.
-            $adfolderpostprocess= Get-ChildItem -Path $postprocessingpath -ErrorAction SilentlyContinue | where {$_.name -like "*postprocessed*"} | where {$_.name -like "*ActiveDirectory*"}
+            $adfolderpostprocess= Get-ChildItem -Path $postprocessingpath -ErrorAction SilentlyContinue | where {$_.name -like "*postprocessed_nh*"} | where {$_.name -like "*ActiveDirectory*"}
             
             if ($adfolderpostprocess){
                 $adname= $($adfolderpostprocess.name.tostring().split('-'))[0]
                 $adfolder= $adfolderpostprocess.FullName
-                $targetfile= $(Get-ChildItem -Recurse -path $adfolder -ErrorAction SilentlyContinue | where {$_.name -like "*activedirectory*" -and $_.attributes -eq "Archive"}).fullname
+                $targetfile= $(Get-ChildItem -Recurse -path $adfolder -ErrorAction SilentlyContinue | where {$_.name -like "*activedirectory*" -and $_.name -like "*_nh*" -and $_.attributes -eq "Archive"}).fullname
             
                 if ($targetfile){
                     $content= get-content $targetfile
@@ -498,7 +498,7 @@ function tgw ($rawcommand){
                 $folder= $folder.FullName
         
                 foreach ($dataset in $datasets){
-                    $targetfile= $(Get-ChildItem -path $folder -ErrorAction SilentlyContinue | where {$_.name -like "*$dataset*"}).fullname
+                    $targetfile= $(Get-ChildItem -path $folder -ErrorAction SilentlyContinue | where {$_.name -like "*$dataset*" -and $_.name -like "*_nh*"}).fullname
         
                     if ($targetfile){
                         $content= get-content $targetfile
@@ -529,8 +529,7 @@ function tgw ($rawcommand){
                 $alt_header= '"' + $alt_header + '"'
             
                 #reapply headers to postprocessed datasets
-                if ($header -ne 'LEAVE-ORIGINAL'){
-                    
+                if ($header -ne 'LEAVE-ORIGINAL'){                    
                         
                     if ($conf){
                         $content= get-content $fullname | where {$_ -ne $header -and $_ -ne $alt_header}
@@ -1102,7 +1101,8 @@ function tgw ($rawcommand){
             $content >$filename
 
             #make new file with no headers in the postprocessingpath
-            $content[1..($content.count)] >$outputdirectory\$datatype-postprocessed.csv
+            $content[1..($content.count)] >$outputdirectory\$datatype-postprocessed_nh.csv
+            $content >$outputdirectory\$datatype-postprocessed.csv
         }                   
                 
         $totalend= get-date
@@ -1113,15 +1113,16 @@ function tgw ($rawcommand){
         write-output "$(get-date)-- Concatenating"
 
         copyto-raw
-    
+        #get rid of _nh files
+        $markfordeletion= $($postprocessfoldernames | % {gci $_ | where {$_.name -like "*_nh*"}}).fullname
+        $markfordeletion | % {del $_}
+
         $end= get-date
         $seconds= calculate-time $start $end        
         Write-host "$(get-date)-- [Done] Concatenating $seconds" -ForegroundColor Green
         $start= get-date
         write-output "$(get-date)-- Cleaning up headers"
-    
         cleanup-headers
-
         $end= get-date
         $seconds= calculate-time $start $end
         Write-host "$(get-date)-- [Done] Cleaning up headers $seconds" -ForegroundColor green
