@@ -1,5 +1,6 @@
 # The Greater Wall
 * Author: Kyle Desjardins
+* Co-author: Justin Demoss
 * Email: Thegreaterwall@gmail.com
 * Creation Date: December 2019
 * Release Date: 05 November 2021
