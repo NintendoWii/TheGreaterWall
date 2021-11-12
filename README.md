@@ -28,4 +28,4 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 * More modules
 
 ### Bugs
-* Actively Working: Improper parsing of PowerShell Logs is causing them not to be post-processed correctly. 
+* Actively Working: Improper parsing of PowerShell Logs is causing them not to be post-processed correctly. 12NOV2021
