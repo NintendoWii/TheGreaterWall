@@ -26,3 +26,6 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 * MITRE ATT&CK crosswalk
 * HTML Report Generation
 * More modules
+
+###Bugs
+* Actively Working: Improper parsing of PowerShell Logs is causing them not to be post-processed correctly. 
