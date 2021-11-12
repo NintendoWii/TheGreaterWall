@@ -38,7 +38,7 @@ function PowershellLogs{
         #$message= Get-FileHash -InputStream ([System.IO.MemoryStream]::New([System.Text.Encoding]::ASCII.GetBytes($message)))
         #$message= $message.hash 
                
-        #calulate ghetto hash to accomplish the hashing concept in constrained language mode
+        #calulate message hash to accomplish the hashing concept in constrained language mode
         $verbosemessage= $message
         $message= $message.tochararray() | % {[byte]$_}
         $messagehash= $($message | Measure-Object -sum).sum
@@ -62,7 +62,7 @@ function PowershellLogs{
         #output whole messaage and record id to STD out
         write-output "TGWIndex= $x"
         write-output "Recordid= $recordid"
-        Write-Output "Ghettohash= $messagehash"
+        Write-Output "messagehash= $messagehash"
         Write-output "ScriptblockID= $scriptblockid"
         Write-Output $verbosemessage
         $x++
