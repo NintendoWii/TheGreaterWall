@@ -501,7 +501,7 @@ function tgw ($rawcommand){
         
                 foreach ($dataset in $datasets){
                     $targetfile= $(Get-ChildItem -path $folder -ErrorAction SilentlyContinue | where {$_.name -like "*$dataset*" -and $_.name -like "*_nh*"}).fullname
-        
+
                     if ($targetfile){
                         $content= get-content $targetfile
                         $content >> "$postprocessingpath\RawData\all_$dataset.csv"
@@ -569,7 +569,7 @@ function tgw ($rawcommand){
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"})
             $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
             #For debugging purposes, uncomment the next line
-            $analystsid= 0
+            #$analystsid= 0
             
 
             foreach ($l in $logs){
@@ -595,7 +595,7 @@ function tgw ($rawcommand){
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"}).fullname
             $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
             #For debugging purposes, uncomment the next line
-            $analystsid= 0
+            #$analystsid= 0
 
 
             foreach ($l in $logs){
@@ -608,10 +608,10 @@ function tgw ($rawcommand){
                 $csvoutput= $csvoutput | ConvertFrom-Csv
             
                 $messageobj=@()
-                $messageobj+= "Ghettohash,RecordID,Start,End"
+                $messageobj+= "messagehash,RecordID,Start,End"
                
                 $indexes= $($messages | select-string "TGWindex=" | where {$_ -notlike "*Write-output*"} | where {$_ -notlike "*$*"} | select line,linenumber)
-                $ghettohashes= $($messages | select-string "ghettohash=" | where {$_ -notlike "*Write-output*"}  | where {$_ -notlike "*$*"} | select line,linenumber)
+                $messagehashes= $($messages | select-string "messagehash=" | where {$_ -notlike "*Write-output*"}  | where {$_ -notlike "*$*"} | select line,linenumber)
                 $recordids= $($messages | select-string "recordid=" | where {$_ -notlike "*Write-output*"} | where {$_ -notlike "*$*"} | select line,linenumber)
                 $indexcount= $indexes.count - 1        
         
@@ -619,7 +619,7 @@ function tgw ($rawcommand){
                 $x= 0
             
                 while ($x -lt $indexcount){
-                    $gh= $ghettohashes[$x].line.tostring()-replace('Ghettohash= ','')
+                    $gh= $messagehashes[$x].line.tostring()-replace('messagehash= ','')
                     $recordid= $recordids[$x].line.tostring()-replace('Recordid= ','')
                     $start= $indexes[$x].linenumber.tostring()
                     $start= $start - 1
@@ -629,11 +629,11 @@ function tgw ($rawcommand){
                     $x++
                 }
         
-                $messageobj= $messageobj | convertfrom-csv | sort -Unique -Property ghettohash
+                $messageobj= $messageobj | convertfrom-csv | sort -Unique -Property messagehash
                 
             
                 new-item -ItemType directory -path $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\ -Name PowerShell_Master_Reference -ErrorAction SilentlyContinue
-                $newGH= $messageobj.ghettohash        
+                $newGH= $messageobj.messagehash        
                 $existingGH= $(get-childitem $env:userprofile\desktop\TheGreaterWall\tgwlogs\powershell_master_reference -ErrorAction SilentlyContinue).name | % {$_-replace('.txt','')}
                 $diff= $(Compare-Object $newgh $existingGH | where {$_.sideindicator -eq "<="}).inputobject
         
@@ -645,7 +645,7 @@ function tgw ($rawcommand){
                 $hitcount= 0
         
                 foreach ($d in $diff){
-                    $m= $messageobj | where {$_.ghettohash -eq "$d"}
+                    $m= $messageobj | where {$_.messagehash -eq "$d"}
                     $csvrecord= $csvoutput | where {$_.recordid -eq $($m.RecordID)}
                     
                     if ($csvrecord.UserSID -ne $analystsid){
@@ -653,14 +653,14 @@ function tgw ($rawcommand){
                         $start= $m.Start
                         $end= $m.end
                         $logoutput= $Log[$start..$end]
-                        $filename= $m.Ghettohash + ".txt"
+                        $filename= $m.messagehash + ".txt"
                         $logoutput >$env:USERPROFILE\Desktop\TheGreaterWall\tgwlogs\Powershell_master_reference\$filename
                     }
                 }
             }
             
             $logobj= @()
-            $logobj+= "Ghettohash,ScriptblockID,Position,Total"
+            $logobj+= "messagehash,ScriptblockID,Position,Total"
 
             foreach ($i in $(get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\tgwlogs\Powershell_master_reference\ | where {$_.name -notlike "*.collection"})){
                 $filename= $i.FullName
@@ -698,7 +698,7 @@ function tgw ($rawcommand){
                 $output= @()
                         
                 foreach ($i in $collection){ 
-                    $filename= $i.Ghettohash                         
+                    $filename= $i.messagehash                         
                     $output+= " " 
                     $output+= "***Scriptblock $($i.position) of $total***"
                     $output+= " "
@@ -706,7 +706,7 @@ function tgw ($rawcommand){
                  } 
 
                 foreach ($i in $collection){      
-                    $filename= $i.Ghettohash                       
+                    $filename= $i.messagehash                       
                     $outputfile= $filename + ".collection"
                     
                     if (!$(Test-Path $outputfile)){
@@ -1057,7 +1057,6 @@ function tgw ($rawcommand){
         $start= get-date
         #Extract the CSV potion of the PowerShell logs and write them to a csv file each endpoints post processing folder prior to building the master reference
         ExtractCSVFrom-PowerShellLogs
-
         ###################################
         #Build PowerShell Master Reference#
         ###################################
@@ -1084,7 +1083,8 @@ function tgw ($rawcommand){
         
         #do the rest
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
-        $files= $files | where {$_.name -notlike "*powershell*"} |  where {$_.name -notlike "*ActiveDirectory*"}
+        #$files= $files | where {$_.name -notlike "*powershell*"} |  where {$_.name -notlike "*ActiveDirectory*"}
+        $files= $files | where {$_.name -notlike "*ActiveDirectory*"}
 
         foreach ($f in $files){
             $filename= $f.fullname
@@ -1128,8 +1128,7 @@ function tgw ($rawcommand){
         $end= get-date
         $seconds= calculate-time $start $end
         Write-host "$(get-date)-- [Done] Cleaning up headers $seconds" -ForegroundColor green
-           
-        
+
         ###################
         #Identify Outliers#
         ###################
@@ -1159,6 +1158,7 @@ function tgw ($rawcommand){
                 }
 
                 if ($v -ne "ActiveDirectoryEnumeration"){
+
                     identify-outlyers $v
                     $end= Get-Date
                     $seconds= calculate-time $start $end
@@ -1893,7 +1893,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
 
             if ($listofips -eq "Localhost"){
-                New-Variable -name listofips -Value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+                New-Variable -name listofips -Value "127.0.0.1" -Force -ErrorAction SilentlyContinue -Scope global
             }
 
             if ($listofips -ne "Localhost"){
@@ -2750,7 +2750,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             
                         if ($listofips -eq "localhost"){
                             $hostname= $env:COMPUTERNAME
-                            invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$a-$date" -AsJob 
+                            invoke-command -ScriptBlock $actioncode -computername 127.0.0.1 -JobName "127.0.0.1-$a-$date" -AsJob 
                         }
 
                         if ($listofips -ne "localhost"){
