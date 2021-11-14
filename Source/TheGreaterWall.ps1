@@ -586,8 +586,10 @@ function tgw ($rawcommand){
                 }
 
                 $csvoutput= $csvoutput | convertto-csv -NoTypeInformation
-                $outputpath= "$postprocessingpath" + "\" + "$($l.Directory.name.tostring())-PostProcessed" + "\" + "PowerShellLogs-postprocessed.csv"                
+                $outputpath= "$postprocessingpath" + "\" + "$($l.Directory.name.tostring())-PostProcessed" + "\" + "PowerShellLogs-postprocessed.csv" 
+                $outputpath_nh= "$postprocessingpath" + "\" + "$($l.Directory.name.tostring())-PostProcessed" + "\" + "PowerShellLogs-postprocessed_nh.csv"                
                 $csvoutput >$outputpath
+                $csvoutput[1..$($csvoutput.Count)] >$outputpath_nh
             }
         }
 
@@ -1083,8 +1085,7 @@ function tgw ($rawcommand){
         
         #do the rest
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
-        #$files= $files | where {$_.name -notlike "*powershell*"} |  where {$_.name -notlike "*ActiveDirectory*"}
-        $files= $files | where {$_.name -notlike "*ActiveDirectory*"}
+        $files= $files | where {$_.name -notlike "*powershell*"} |  where {$_.name -notlike "*ActiveDirectory*"}
 
         foreach ($f in $files){
             $filename= $f.fullname
@@ -1115,8 +1116,9 @@ function tgw ($rawcommand){
         write-output "$(get-date)-- Concatenating"
 
         copyto-raw
+
         #get rid of _nh files
-        $markfordeletion= $($postprocessfoldernames | % {gci $_ | where {$_.name -like "*_nh*"}}).fullname
+        $markfordeletion= $($postprocessfoldernames | % {Get-ChildItem $_ | where {$_.name -like "*_nh*"}}).fullname
         $markfordeletion | % {del $_}
 
         $end= get-date
