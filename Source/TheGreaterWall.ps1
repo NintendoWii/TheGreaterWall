@@ -2817,7 +2817,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             Import-ActiveDirectory
                         }
 
-                        if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
+                        if ($activedirectoryconfiguration -or $activedirectoryconfiguration -eq "1"){
                             $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
                             new-item -name $action-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
                             $filename= "$action-$date.txt"    
@@ -2830,7 +2830,8 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             Remove-Module -name $modulename
                         
                             $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                            Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
+                            Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh -AsJob
+                            Remove-PSSession -name dcsesh -ErrorAction SilentlyContinue
                         }                  
                     }
 
