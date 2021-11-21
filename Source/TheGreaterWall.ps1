@@ -741,8 +741,9 @@ function tgw ($rawcommand){
                 $sortproperties= $($settings | where {$_.p2 -eq "Pivot"}).p3                
         
                 #get contents of file
-                $path= "$postprocessingpath\RawData\all_activedirectoryEnumeration.csv"
-                $output= get-content $path -ErrorAction SilentlyContinue
+                $path= $(Get-ChildItem $postprocessingpath | where {$_.name -like "*activedirectory*"} | where {$_.Attributes -eq "directory"}).fullname
+                $file= $(Get-ChildItem $path).fullname
+                $output= get-content $file -ErrorAction SilentlyContinue
                                         
                 if (!$output){
                     Write-Host "[Warning] no Active Directory file" -ForegroundColor Red
