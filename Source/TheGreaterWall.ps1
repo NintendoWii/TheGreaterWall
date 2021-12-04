@@ -741,9 +741,8 @@ function tgw ($rawcommand){
                 $sortproperties= $($settings | where {$_.p2 -eq "Pivot"}).p3                
         
                 #get contents of file
-                $path= $(Get-ChildItem $postprocessingpath | where {$_.name -like "*activedirectory*"} | where {$_.Attributes -eq "directory"}).fullname
-                $file= $(Get-ChildItem $path).fullname
-                $output= get-content $file -ErrorAction SilentlyContinue
+                $path= "$postprocessingpath\RawData\all_activedirectoryEnumeration.csv"
+                $output= get-content $path -ErrorAction SilentlyContinue
                                         
                 if (!$output){
                     Write-Host "[Warning] no Active Directory file" -ForegroundColor Red
@@ -1770,6 +1769,17 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         
             $listofips= read-host -prompt "#TheGreaterWall"
             $regex= "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$"
+                        
+            if ($listofips -eq "1"){
+                clear-host
+                Header
+                Write-Output "Please provide the file location of the IP addresses to investigate:`n"
+                Write-Output "    Example: "`""$env:USERPROFILE\Desktop\ListofIPaddresses.txt"`"
+                Write-Output "`n"
+                $path= read-host -prompt "#TheGreaterWall"
+                new-variable -name listofips -value $(get-content $path) -scope global -force
+                $x= 1
+            }
 
             if ($listofips -eq "3"){
                 clear-host
@@ -1779,20 +1789,11 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 Write-Output "`n"
                 $path= read-host -prompt "#TheGreaterWall"
                 new-variable -name listofips -value $(get-content $path) -scope global -force
+                $x= 1
             }
 
             if ($listofips -eq "4"){
                 $listofips= "localhost"
-            }
-
-            if ($listofips -eq "1"){
-                clear-host
-                Header
-                Write-Output "Please provide the file location of the IP addresses to investigate:`n"
-                Write-Output "    Example: "`""$env:USERPROFILE\Desktop\ListofIPaddresses.txt"`"
-                Write-Output "`n"
-                $path= read-host -prompt "#TheGreaterWall"
-                new-variable -name listofips -value $(get-content $path) -scope global -force
             }
 
             if ($listofips -eq "2"){
@@ -1895,11 +1896,11 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 }
             }
 
-            if ($listofips -eq "Localhost"){
+            if ($x -ne 1 -and $listofips -eq "Localhost"){
                 New-Variable -name listofips -Value "127.0.0.1" -Force -ErrorAction SilentlyContinue -Scope global
             }
 
-            if ($listofips -ne "Localhost"){
+            if ($x -ne 1 -and $listofips -ne "Localhost"){
                 New-Variable -name listofips -Value $allips -Force -ErrorAction SilentlyContinue -Scope global
             }
         }
@@ -2818,7 +2819,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             Import-ActiveDirectory
                         }
 
-                        if ($activedirectoryconfiguration -or $activedirectoryconfiguration -eq "1"){
+                        if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
                             $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
                             new-item -name $action-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
                             $filename= "$action-$date.txt"    
@@ -2831,8 +2832,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             Remove-Module -name $modulename
                         
                             $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
-                            Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh -AsJob
-                            Remove-PSSession -name dcsesh -ErrorAction SilentlyContinue
+                            Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
                         }                  
                     }
 
