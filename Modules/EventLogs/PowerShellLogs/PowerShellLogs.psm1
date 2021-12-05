@@ -29,6 +29,7 @@ function PowershellLogs{
         $message= $i.message | Convertfrom-csv | ConvertTo-Csv
         $message= $message | select-string -NotMatch -pattern "^.path:"
         $scriptblockid= $($message | select-string -pattern "^.ScriptBlock ID:").tostring()
+        $scriptblockid= $scriptblockid.TrimStart('"').trimend('"')
         $message= $message | select-string -NotMatch -pattern "^.ScriptBlock ID:"
         $message= $message | select-string -NotMatch -pattern "text \([0-9] of [0-9]\)"
         $message= $message | select-string -NotMatch "#TYPE System.Management.Automation.PSCustomObject"
