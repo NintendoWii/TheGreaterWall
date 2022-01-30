@@ -4,6 +4,7 @@ function Prefetch{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "Prefetch"
             Time= $null
             Name= $null
             Status= $null
