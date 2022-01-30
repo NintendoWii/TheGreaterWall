@@ -4,6 +4,7 @@ function SystemLog7024{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "SystemLog7024"
             InstaceId= $null
             Index= $null
             TimeGenerated= $null
