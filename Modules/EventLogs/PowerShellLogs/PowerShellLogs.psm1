@@ -4,6 +4,7 @@ function PowershellLogs{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "PowerShellLogs"
             ID= "4104"
             RecordID= $null
             ProcessID= $null
