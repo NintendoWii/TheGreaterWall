@@ -4,6 +4,7 @@
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "AlternateDataStreams"
             Stream= $null
             ZoneIdentifier= $null            
         }
