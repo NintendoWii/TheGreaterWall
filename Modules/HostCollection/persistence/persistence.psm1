@@ -4,6 +4,7 @@ Function Persistence{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "Persistence"
             Regpath= $null
             Key= $null
             Value= $null
