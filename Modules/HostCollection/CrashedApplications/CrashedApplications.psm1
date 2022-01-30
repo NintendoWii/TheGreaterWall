@@ -4,6 +4,7 @@ function CrashedApplications{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "CrashedApplications"
             Timegenerated= $null
             FaultingApplication= $null
             FaultingModule= $null
