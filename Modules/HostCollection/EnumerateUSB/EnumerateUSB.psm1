@@ -5,6 +5,7 @@ function EnumerateUSB{
                 IP= "null"
                 Hostname= $null
                 DateCollected= $null
+                Source= "EnumerateUSB"
                 Path= $null
                 Driver= $null
                 Service= $null
