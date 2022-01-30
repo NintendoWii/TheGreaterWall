@@ -1,7 +1,7 @@
 function postprocess{invoke-command -ScriptBlock {tgw postprocess}}
 
 function tgw ($rawcommand){
-    $rawcommands= @("status","status-watch","sync","archive-results","reset","postprocess")
+    $rawcommands= @("status","status-watch","sync","archive-results","reset","postprocess","beat-sync")
 
     #Process raw commands from a native powershell prompt
     if ($rawcommand){
@@ -153,6 +153,231 @@ function tgw ($rawcommand){
             }
         }
     }
+
+    #Sets up winlogbeat forwarder parameters
+    function Setup-TGW_Logbeat{
+        if ($tgw_logbeatconfiguration -eq "0" -or !$tgw_logbeatconfiguration){
+            clear-host
+            header
+            write-output "The Greater Wall has the ability to forward it's results to Security Onion VIA Winlogbeat."
+            write-output "If you don't wish to use this feature, you can skip this."
+            write-output " "
+            Write-output "1. Continue with Winlogbeat setup"
+            write-output "2. Skip"
+            $choice= read-host -Prompt " "
+            clear-host
+
+            if ($choice -eq "2"){
+                write-output "Skipping Winlogbeat setup."
+                start-sleep -Seconds 1
+                new-variable -name tgw_logbeatconfiguration -Value "1" -Scope global -ErrorAction SilentlyContinue
+                clear-host
+            }
+
+            if ($choice -ne "1" -and $choice -ne "2"){
+                write-output "Invalid choice"
+                start-sleep -Seconds 1
+                Setup-TGW_Logbeat
+            }
+
+            if ($choice -eq "1"){
+                header
+                write-output "Please Enter the IP and port of your Security Onion in the following format- IP:Port"
+                write-output "-Example - 10.0.0.150:5044"
+                $securityonionip= read-host -Prompt " "
+                $securityonionip= $securityonionip.TrimStart('"').trimend('"')
+                new-variable -name securityonionip -value $securityonionip -scope global -force -ErrorAction SilentlyContinue
+                clear-host
+                header
+                write-host "Security onion IP and port configured as -- $securityonionip --."     
+                write-output " "                                 
+                new-variable -name tgw_logbeatconfiguration -value 1 -scope global    
+                pause
+                clear-host                          
+
+                $configfile= get-content $env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml
+                $hostentry= $($configfile | select-string "hosts: \[").tostring()
+                $oldval= $hostentry.split('[').split(']')[-2]-replace('"','')
+                new-item -itemtype Directory -path C:\Windows\Temp\ -name TGWLB -erroraction silentlycontinue
+                $configfile-replace("$oldval","$securityonionip") >$env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml
+                $(get-content $env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml) >C:\windows\temp\TGWLB\TGW_Logbeat.yml
+
+                $winlogbeatbinary= @()
+                $winlogbeatbinary+= $(Get-ChildItem $env:userprofile\desktop\TheGreaterWall\Source\ | where {$_.extension -eq ".exe"}).fullname
+                $winlogbeatbinary+= "None of these"
+
+                $winlogbeatbinary= $winlogbeatbinary | Out-GridView -PassThru -Title "Choose WinLogbeat Executable"
+
+                if ($winlogbeatbinary -eq "None of these"){
+                    Clear-host
+                    header
+                    write-host "[ERROR/WARNING]" -ForegroundColor DarkYellow
+                    Write-output "You must place the Winlogbeat executable at path: $env:userprofile\Desktop\TheGreaterWall\Source\"
+                    Write-Output " "
+                    write-output "  -In order to maintain the claim that The Greater Wall is 100% written in PowerShell, Winlogbeat is not part of the default package."
+                    Write-Output "  -You must download the file separately and ensure that you have obtained permission for the installation by the system owners."
+                    write-output "  -It's preferred if you name the file 'seconionbeat.exe'"
+                    write-output "  -If you name it something else, it will automatically be renamed to 'seconionbeat.exe' by The Greater Wall."
+                    write-output "  -A copy is available at https://github.com/NintendoWii/TGW_Logbeat"
+                    Write-Output " "
+                    write-host "  -TLDR- missing file: $env:userprofile\desktop\TheGreaterWall\Source\seconionbeat.exe" -ForegroundColor Red
+                    Write-Output ""
+                    pause
+                }
+
+                if ($winlogbeatbinary -ne "None of these"){
+                    new-item -ItemType Directory -Path C:\Windows\Temp\ -Name TGWLB -ErrorAction SilentlyContinue
+
+                    remove-item -path C:\Windows\Temp\TGWLB\TGW_Logbeat.yml -ErrorAction SilentlyContinue
+                    remove-item -path C:\Windows\Temp\TGWLB\seconionbeat.exe -ErrorAction SilentlyContinue
+
+                    copy-item -Path $env:USERPROFILE\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml -Destination C:\Windows\temp\TGWLB\ -ErrorAction SilentlyContinue
+                    try{
+                        Copy-Item -path $winlogbeatbinary -Destination C:\Windows\Temp\TGWLB\seconionbeat.exe -ErrorAction SilentlyContinue
+                    }
+                    Catch{}
+
+                    sleep 1
+
+                    # Delete and stop the service if it already exists.
+                    if (Get-Service TGWLB -ErrorAction SilentlyContinue){
+                        $service = Get-WmiObject -Class Win32_Service -Filter "name='TGWLB'"
+                        $service.StopService()
+                        Start-Sleep -s 1
+                        $service.delete()
+                    }
+    
+                    $workdir= $(pwd).tostring()
+
+                    # Create the new service.
+                    New-Service -name tgwlb `
+                        -displayName tgwlb `
+                        -binaryPathName "`"C:\Windows\temp\TGWLB\seconionbeat.exe`" --environment=windows_service -c `"C:\Windows\temp\TGWLB\TGW_Logbeat.yml`" --path.home `"C:\Windows\temp\TGWLB`" --path.data `"$env:PROGRAMDATA\seconionbeat`" --path.logs `"$env:PROGRAMDATA\winlogbeat\logs`" -E logging.files.redirect_stderr=true"
+
+                    # Attempt to set the service to delayed start using sc config.
+                    Try {
+                    Start-Process -FilePath sc.exe -ArgumentList 'config tgwlb start= delayed-auto'
+                    }
+
+                    Catch { Write-Host -f red "An error occured setting the service to delayed start." }    
+            
+                    "sc start tgwlb" | cmd        
+                    Start-Sleep -Seconds 2
+                    Clear-Host
+
+                    $tgwlb_service= get-service -name tgwlb -ErrorAction SilentlyContinue
+
+                    #Check to make sure the service is running and display error if it isn't
+                    if ($tgwlb_service.status -ne "Running"){
+                        Clear-Host
+                        header
+                        write-host "[ERROR] Unable to start TGW_Logbeat (TGWLB) Service" -ForegroundColor Red
+                        write-host " "
+                        Write-Output "  -Try double checking the executable you specified and make sure it's correct."
+                        write-output "  -Make sure the executable file isn't corrupted."
+                        Write-Output "  -Make sure the TGW_Logbeat.yml file is correct."
+                        write-output " "
+                        pause
+                    }
+            
+                    if ($tgwlb_service.status -eq "Running"){
+                        #Check to make sure the network connection is good between TGW and Security Onion Node
+                        $Config= $(Get-Content C:\Windows\Temp\TGWLB\TGW_Logbeat.yml | select-string "Hosts: ").tostring().split(':')-replace('\["','')-replace('"]','')
+                        $Config= $($Config | % {$_.TrimStart().trimend()})[1..2]
+                        $port= $config[1]
+                        $ip= $Config[0]
+                        clear-host
+                        Write-Output "Checking Network Connection to Security Onion Node specified in C:\Windows\Temp\TGW_Logbeat.yml"
+                        Write-Output "This can anywhere from 1 to 30 Seconds...Please be patient."
+                
+                        #$netconnection= Get-NetTCPConnection | where {$_.RemoteAddress -eq "$ip" -and $_.RemotePort -eq "$port"}
+
+                        if (!$netconnection){
+                            $x= 0
+                            while ($true){
+                                sleep 2                        
+                                $netconnection= Get-NetTCPConnection | where {$_.RemoteAddress -eq "$ip" -and $_.RemotePort -eq "$port"}
+                                $netconnection >> $env:userprofile\Desktop\TheGreaterWall\TGWLogs\Netconnectionlog.txt
+
+                                if ($netconnection.localaddress){
+                                    sleep 2
+                                    $netconnection= Get-NetTCPConnection | where {$_.RemoteAddress -eq "$ip" -and $_.RemotePort -eq "$port"}
+                                    $netconnection >> $env:userprofile\Desktop\TheGreaterWall\TGWLogs\Netconnectionlog.txt
+
+                                    if ($netconnection.state -eq "Established"){
+                                        clear-host
+                                        header
+                                        write-host "[Success] TGW_Logbeat is running and is communicating with Security Onion Node specified in C:\Windows\Temp\TGW_Logbeat.yml"
+                                    }
+
+                                    if ($netconnection.state -ne "Established"){
+                                        clear-host
+                                        header
+                                        write-host "[ERROR] Trouble communicating to Security Onion Node" -ForegroundColor Red
+                                        Write-Output " "
+                                        Get-Content $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Netconnectionlog.txt
+                                        Write-Output " "
+                                        Write-Output "  -TIP #1: Check Host Firewall and all network firewalls between this host and the Security Onion Node for rules that block port: ($port) traffic."
+                                        write-output "  -TIP #2: If the status is [SynSent] the most common issue is that a route needs to be added on Security Onion Node that tells it how to reach this host"
+                                        write-output "  -TIP #3: Ensure that you run Sudo-so-allow pn the Security Onion node in order to allow tcp:$port traffic."
+                                        Write-output "  -TIP #4: It's advised to use the standard port of 5044 in C:\windows\temp\TGW_Logbeat.yml because that's the default for Security Onion. Your's is set to $port."
+                                        write-output " " 
+                                        pause
+                                        remove-item -Path $env:userprofile\Desktop\TheGreaterWall\TGWLogs\Netconnectionlog.txt -Force -ErrorAction SilentlyContinue
+                                        break
+                                    }
+                                }                            
+        
+                                if (!$netconnection){
+                                    $x++                        
+                                    if ($x -eq 10){
+                                        clear-host
+                                        header
+                                        write-host "[ERROR] Unable to communicate to Security Onion Node" -ForegroundColor Red
+                                        Write-Output " "
+                                        Write-Output " No connection attempts seen. It's likely a host machine issue rather than a networking issue. Check firewall/policy/routing table."
+                                        Write-Output " "
+                                        pause
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Function Uninstall-TGWLogBeat{
+        Clear-host
+        $service = Get-WmiObject -Class Win32_Service -Filter "name='tgwlb'"
+
+        if ($service){
+            $service.StopService()
+            Start-Sleep -s 1
+            $service.delete()
+            Remove-Item -Path C:\windows\temp\TGWLB -Force -Recurse -ErrorAction SilentlyContinue
+            Clear-host
+            header
+            Write-output "TGW_Logbeat service has been stopped and deleted and the TGWLB directory has been removed from C:\windows\temp"
+            write-output " "
+            pause
+            clear-host
+        }
+
+        if (!$service){
+            clear-host
+            header
+            write-output "TGW_Logbeat service not found. Nothing to stop, no files deleted"
+            write-output " "
+            pause
+            clear-host
+        }
+    }
+
+        
+
     #Tests the WINRM connectivity to the target IPs
     function get-wsmanconnection ($listofips){
         if ($completedconnectiontest -ne "Yes"){
@@ -1426,6 +1651,9 @@ function tgw ($rawcommand){
         write-output 'Command= "show-connectionstatus"  Description= View Connectivity status for all targeted endpoints'
         write-output 'Command= "archive-results"        Description= Archive old results to avoid confusing them with current results'
         write-output 'Command= "module-status"          Description= Shows whether or not modules.conf contains a valid config for each module'
+        write-output 'Command= "Reset-TGWLogbeat"       Description= Re-configure the settings for the TGW_Logbeat Forwarder'
+        write-output 'Command= "uninstall-TGWLogbeat"   Description= Removes the (TGWLB) Service and Removes the files from C:\Windows\Temp'
+        write-output 'Command= "beat-sync"              Description= Creates local event logs from results and forwards them to Security Onion'
         write-output 'Command= "back"                   Description= Go back to the main menu'
         write-output " "
         pause
@@ -1897,7 +2125,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
 
             if ($x -ne 1 -and $listofips -eq "Localhost"){
-                New-Variable -name listofips -Value "127.0.0.1" -Force -ErrorAction SilentlyContinue -Scope global
+                New-Variable -name listofips -Value "localhost" -Force -ErrorAction SilentlyContinue -Scope global
             }
 
             if ($x -ne 1 -and $listofips -ne "Localhost"){
@@ -2146,6 +2374,72 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         }
     }    
 
+    #syncs results to SecOnion Via WinLogBeat
+    function beat-sync{
+        function build-class{
+            $outputclass= [pscustomobject][ordered]@{
+            AlternateDataStreams= "100"
+            CrashedApplications= "101"
+            DllInformation= "102"
+            EnumerateUSB= "103"
+            HotFixes= "104"
+            ImageFileExecutionOptions= "105"
+            InstalledSoftware= "106"
+            NetworkConnections= "107"
+            persistence= "108"
+            Prefetch= "109"
+            ProcessInfo= "110"
+            ProcessTree= "111"
+            ServiceInfo= "112"
+            smb="113"
+            TasksScheduled= "114"
+            }
+         return $outputclass
+        } 
+
+        $log_ids= build-class
+
+        Clear-host
+        New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue
+        Limit-EventLog -LogName TGW -MaximumSize 4000000KB -ErrorAction SilentlyContinue
+        
+        $beatsync_SB={
+            $log_ids= $args[0]
+            $files= $(get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\results -Force -Recurse -ErrorAction SilentlyContinue | where {$_.Attributes -ne "Directory"} | where {$_.name -notlike "*log*"}) 
+
+            #check to make sure you only sync the files that havent already been sync'd
+            $alreadySyncd= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedBeatSyncs.txt
+            
+            if ($alreadySyncd){
+                $filesToSync= $(Compare-Object $($files.fullname) $alreadySyncd | where {$_.sideindicator -eq "<="}).inputobject
+            }
+
+            if (!$alreadySyncd){
+                $filesToSync= $files.fullname
+            }
+
+            foreach ($file in $filesToSync){
+                $name= $file.split('-')[1]
+                $logID= $log_ids.$name
+
+                if (!$logID){
+                    $logID= "200"
+                }
+
+                $fullname= $file
+                $fullname>>$env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedBeatSyncs.txt
+                $content= Get-Content $fullname | convertfrom-csv
+                        
+                foreach ($c in $content){
+                    $c= $c | convertto-json
+                    Write-EventLog -LogName TGW -Source TGW -EntryType Warning -EventId $logID -Message $c
+                }
+            }
+        }
+    get-job | where {$_.name -like "*beat-sync*" -and $_.state -eq "Completed"} | Remove-Job
+    start-job -ScriptBlock $beatsync_SB -ArgumentList $log_ids -Name "Beat-Sync$(1..1000 | get-random -count 1)"   
+    }
+
     #Clears out finished background jobs and writes them to disk in their appropriate locations
     function get-allfinishedjobs{
         #get results of the finished jobs
@@ -2296,6 +2590,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
     setup-framework
 
     #Process raw commands if they are issued by the user
+    if ($rawcommand -eq "Beat-sync"){
+        clear-host
+        beat-sync
+        clear-host
+        break
+    }
 
     if ($rawcommand -eq "postprocess"){
         clear-host
@@ -2316,6 +2616,8 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             clear-host
         }
     }
+    #prompt the user for TGW_Logbeat configuration params
+    Setup-TGW_Logbeat
 
     #Prompt the user for the target IP Addresses
     get-ipaddresses
@@ -2492,6 +2794,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 clear-host
             }
 
+            if ($action -eq "Uninstall-tgwlogbeat"){
+                clear-host
+                Uninstall-TGWLogBeat
+                Clear-host
+            }
+
             if ($action -eq "go-interactive"){
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
                 go-interactive
@@ -2502,6 +2810,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 get-allfinishedjobs
                 set-location $env:userprofile\desktop\thegreaterwall\results
             }
+
+            if ($action -eq "beat-sync"){
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+                beat-sync
+                set-location $env:userprofile\desktop\thegreaterwall\results
+            }
         
             if ($action -eq "status"){
                 clear-host
@@ -2509,7 +2823,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 $jobs= @()
                 $jobs+= "Name,State,HasData"
     
-                foreach ($j in $(get-job)){
+                foreach ($j in $(get-job | where {$_.name -notlike "*beat-sync*"} | where {$_.name -notlike "*log_builder*"})){
     
                     if ($j.state -eq "Running"){
                         $name= $j.Name
@@ -2541,7 +2855,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     }
                 }
             
-                if ($jobs.count -eq 0){
+                if ($jobs.count -eq 1){
                     Write-Output "Nothing to display"
                     Write-Output " "
                 }
@@ -2589,11 +2903,20 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 get-creds
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
+
             if ($action -eq "reset-DCcreds"){
                 clear-host
                 Import-ActiveDirectory
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
-            }                        
+            }
+            
+            if ($action -eq "Reset-TGWLogbeat"){
+                clear-host
+                Remove-Variable -name tgw_logbeatconfiguration -Scope global
+                Uninstall-TGWLogBeat
+                Setup-TGW_Logbeat
+            }     
+                               
             if ($action -eq "hail-mary"){
                 clear-host
                 write-host "You've selected HAIL-MARY. This runs all $mode modules on all targets"
@@ -2848,8 +3171,9 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             Remove-Module -name $action
                             
                             if ($listofips -eq "localhost"){
-                                $hostname= $env:COMPUTERNAME=
-                                invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$action-$date" -AsJob 
+                                #$hostname= $env:COMPUTERNAME=
+                                #invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$action-$date" -AsJob 
+                                start-job -ScriptBlock $actioncode -name "localhost-$action-$date"
                             }
 
                             if ($listofips -ne "localhost"){
