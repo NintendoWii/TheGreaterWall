@@ -4,6 +4,7 @@ function DllInformation{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "DllInformation"
             ProcessName= $null
             Processpath= $null
             Module= $null
