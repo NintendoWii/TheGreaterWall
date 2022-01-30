@@ -4,6 +4,7 @@ function smb{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "SMB"
             SMBv1= $null
             SMBv2= $Null
         }
