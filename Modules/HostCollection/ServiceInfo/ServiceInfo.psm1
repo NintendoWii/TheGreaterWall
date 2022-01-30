@@ -4,6 +4,7 @@ function ServiceInfo{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "ServiceInfo"
             State= $null
             startmode= $null
             Servicename= $null
