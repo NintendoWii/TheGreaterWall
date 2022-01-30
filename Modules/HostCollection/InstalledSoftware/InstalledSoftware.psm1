@@ -4,6 +4,7 @@ function InstalledSoftware{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= InstalledSoftware
             Name= $null
             Version= $null
             InstallLocation= $null
