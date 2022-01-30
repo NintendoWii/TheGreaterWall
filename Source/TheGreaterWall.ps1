@@ -248,7 +248,12 @@ function tgw ($rawcommand){
                     }
     
                     $workdir= $(pwd).tostring()
-
+                    
+                    #Create initial Log that TGWLB will reconginize IOT begin connection attempts
+                    New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue
+                    Limit-EventLog -LogName TGW -MaximumSize 4000000KB -ErrorAction SilentlyContinue
+                    Write-EventLog -LogName TGW -Source TGW -EntryType Warning -EventId 115 -Message "TGW_Logbeat_Init"
+                    
                     # Create the new service.
                     New-Service -name tgwlb `
                         -displayName tgwlb `
