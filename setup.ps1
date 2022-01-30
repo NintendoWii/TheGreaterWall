@@ -37,6 +37,7 @@ function setup-framework
         try
             {
             copy-item -path "$currentlocation/source/TheGreaterWall.ps1" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TheGreaterWall.ps1"
+            copy-item -path "$currentlocation/source/TGW_Logbeat.yml" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TGW_Logbeat.yml"
             }
 
         catch
