@@ -4,6 +4,7 @@ function Hotfixes{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "Hotfixes"
             ID= $null
             InstallDate= $null
         }
