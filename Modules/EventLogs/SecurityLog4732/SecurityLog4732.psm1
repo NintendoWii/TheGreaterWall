@@ -4,6 +4,7 @@ Function SecurityLog4732{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "SecurityLog4732"
             InstanceID= $null
             Index= $null
             TimeGenerated= $null
