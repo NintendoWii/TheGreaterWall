@@ -4,6 +4,7 @@ Function ProcessInfo{
             IP= "null"
             Hostname= $null
             DateCollected= $null
+            Source= "ProcessInfo"
             ProcessName= $null
             ProcessID= $null
             ParentProcessName= $null
