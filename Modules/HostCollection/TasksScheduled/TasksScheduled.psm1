@@ -47,6 +47,8 @@ function TasksScheduled{
         }
 	    
         $action= $item.actions.execute
+	$arguments= $item.actions.arguments
+	$action= $action + " $arguments"
         
         if (!$action){
             $action= "NULL"
