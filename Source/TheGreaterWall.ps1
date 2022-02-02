@@ -248,12 +248,12 @@ function tgw ($rawcommand){
                     }
     
                     $workdir= $(pwd).tostring()
-                    
+
                     #Create initial Log that TGWLB will reconginize IOT begin connection attempts
                     New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue
                     Limit-EventLog -LogName TGW -MaximumSize 4000000KB -ErrorAction SilentlyContinue
                     Write-EventLog -LogName TGW -Source TGW -EntryType Warning -EventId 115 -Message "TGW_Logbeat_Init"
-                    
+
                     # Create the new service.
                     New-Service -name tgwlb `
                         -displayName tgwlb `
@@ -797,7 +797,14 @@ function tgw ($rawcommand){
 
         function ExtractCSVFrom-PowerShellLogs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"})
-            $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            try{
+                $analystname= whoami
+                $analystsid= $(whoami /all | Select-String $analysytname -SimpleMatch).tostring().split(" ")[1]
+            }
+            catch{
+                $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            }
+                
             #For debugging purposes, uncomment the next line
             #$analystsid= 0
             
@@ -2410,7 +2417,11 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         
         $beatsync_SB={
             $log_ids= $args[0]
-            $files= $(get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\results -Force -Recurse -ErrorAction SilentlyContinue | where {$_.Attributes -ne "Directory"} | where {$_.name -notlike "*log*"}) 
+            $dirs= get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\results | where {$_.name -notlike "*Postprocess*" -and $_.name -notlike "*activedirectory*" -and $_.name -notlike "*log*"}
+            $files=@()
+            foreach ($d in $dirs){
+                $files+= $(Get-ChildItem $d.FullName).fullname
+            }
 
             #check to make sure you only sync the files that havent already been sync'd
             $alreadySyncd= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedBeatSyncs.txt
