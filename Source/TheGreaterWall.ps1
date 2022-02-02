@@ -832,7 +832,15 @@ function tgw ($rawcommand){
 
         function cleanpowershell-logs{
             $Logs= $(Get-ChildItem -Recurse $env:USERPROFILE\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.name -notlike "*postprocess*"} | where {$_.name -notlike "*archive*"}| where {$_.name -like "*powershell*"}).fullname
-            $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            
+            try{
+                $analystname= whoami
+                $analystsid= $(whoami /all | Select-String $analysytname -SimpleMatch).tostring().split(" ")[1]
+            }
+            catch{
+                $analystsid= $(Get-WmiObject win32_useraccount | where {$_.name -eq "$env:Username"}).sid.tostring()
+            }
+
             #For debugging purposes, uncomment the next line
             #$analystsid= 0
 
