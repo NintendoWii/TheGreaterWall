@@ -1302,20 +1302,25 @@ function tgw ($rawcommand){
         write-output "Reformatting datasets"
         $totalstart= get-date
         $start= get-date
-        #Extract the CSV potion of the PowerShell logs and write them to a csv file each endpoints post processing folder prior to building the master reference
-        ExtractCSVFrom-PowerShellLogs
-        ###################################
-        #Build PowerShell Master Reference#
-        ###################################
-        #The building of this master reference is run as a background job but doesn't require receive-job because it writes to disk the whole time
-        $action= $(get-item Function:\cleanpowershell-logs).ScriptBlock
-        $actioncode = [scriptblock]::Create($action)
-        start-job -ScriptBlock $actioncode -Name PowerShell_Log_Builder | Out-Null
-        #Invoke-Command -ScriptBlock $actioncode -ComputerName 127.0.0.1 -JobName PowerShell_LOG_Builder -AsJob | Out-Null
-        #######################################
-        #END Build PowerShell Master Reference#
-        #######################################
-        #Add ip address to the content of each file, replacing the value "NULL" in the IP field of the CSV
+        
+        $resultspath;pause
+        #Extract the CSV potion of the PowerShell logs and write them to a csv file each endpoints post processing folder prior to building the master reference        
+        
+        if ($(Get-ChildItem C:\Users\user1\desktop\TheGreaterWall\Results -Force -Recurse | where {$_.Parent -notlike "*postprocess*" -and $_.name -notlike "*postprocess*"} | where {$_.name -like "*powershell*"})){
+             ExtractCSVFrom-PowerShellLogs
+            ###################################
+            #Build PowerShell Master Reference#
+            ###################################
+            #The building of this master reference is run as a background job but doesn't require receive-job because it writes to disk the whole time
+            $action= $(get-item Function:\cleanpowershell-logs).ScriptBlock
+            $actioncode = [scriptblock]::Create($action)
+            start-job -ScriptBlock $actioncode -Name PowerShell_Log_Builder | Out-Null
+            #Invoke-Command -ScriptBlock $actioncode -ComputerName 127.0.0.1 -JobName PowerShell_LOG_Builder -AsJob | Out-Null
+            #######################################
+            #END Build PowerShell Master Reference#
+            #######################################
+            #Add ip address to the content of each file, replacing the value "NULL" in the IP field of the CSV
+        }
 
         #since this doesn't need to be done for the active directory results, just make a copy to the post processing location
         $files= Get-ChildItem -Force -Recurse $env:userprofile\Desktop\TheGreaterWall\Results -Depth 1 | where {$_.Attributes -ne "Directory"} -ErrorAction SilentlyContinue
