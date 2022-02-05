@@ -158,18 +158,7 @@ function tgw ($rawcommand){
     function PromptFor-Splunk{
         if ($splunkconfiguration -eq "1" -or !$splunkconfiguration){
             function InstallSplunkForwarder{
-                $splunk= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Source\ | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"} -ErrorAction SilentlyContinue)
-               
-                if (!$splunk){
-                    Clear-Host
-                    #header
-                    Write-Host "[Error]" -ForegroundColor red
-                    Write-Output "No splunk Forwarder Detected in $env:USERPROFILE\Desktop\TheGreaterWall\Source\"
-                    Write-Output "You must provide the Splunk forwarder. It is not included in the default zip download for The Greater Wall."
-                    write-output " "
-                    pause
-                    break
-                }
+                $splunk= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Source\ | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"} -ErrorAction SilentlyContinue)              
             
                 if ($splunk){
                     Clear-Host
@@ -208,7 +197,17 @@ function tgw ($rawcommand){
                         $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
                         msiexec.exe /i $splunk_forwarder RECEIVING_INDEXER="$serverlocation" SPLUNKPASSWORD=password AGREETOLICENSE=Yes /quiet
                     }
-                }      
+                } 
+                                
+                if (!$splunk){
+                    Clear-Host
+                    #header
+                    Write-Host "[Error]" -ForegroundColor red
+                    Write-Output "No splunk Forwarder Detected in $env:USERPROFILE\Desktop\TheGreaterWall\Source\"
+                    Write-Output "You must provide the Splunk forwarder. It is not included in the default zip download for The Greater Wall."
+                    write-output " "
+                    pause                    
+                }     
             }
     
             clear-host
