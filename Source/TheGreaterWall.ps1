@@ -543,7 +543,7 @@ function tgw ($rawcommand){
             Write-Output "           *****Connection Test*****`n"
             write-output "1.) Test the connectivity of your ($($listofips.count)) IP(s)."
             Write-Output "2.) Test the connectivity of a Single IP."
-            write-output "3.) Do not run Connection test."
+            write-output "3.) Do not run Connection test. (advised)"
             $choice= Read-Host -Prompt " "
             
             if ($choice -ne "2" -and $choice -ne "1" -and $choice -ne "3"){
@@ -2885,6 +2885,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         tgw-reset        
     }
 
+    #prompt the user for Splunk configuration params
+    PromptFor-Splunk
+
+    #prompt the user for TGW_Logbeat configuration params
+    Setup-TGW_Logbeat
+
     #Import AD DLL
     $ad= $(get-module).name | where {$_ -like "*activedirectory*"}
     if (!$ad){
@@ -2894,12 +2900,6 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             clear-host
         }
     }
-
-    #prompt the user for Splunk configuration params
-    PromptFor-Splunk
-
-    #prompt the user for TGW_Logbeat configuration params
-    Setup-TGW_Logbeat
 
     #Prompt the user for the target IP Addresses
     get-ipaddresses
