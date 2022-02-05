@@ -1,7 +1,7 @@
 function postprocess{invoke-command -ScriptBlock {tgw postprocess}}
 
 function tgw ($rawcommand){
-    $rawcommands= @("status","status-watch","sync","archive-results","reset","postprocess","beat-sync")
+    $rawcommands= @("status","status-watch","sync","archive-results","reset","postprocess","beat-sync","Splunk-sync")
 
     #Process raw commands from a native powershell prompt
     if ($rawcommand){
@@ -156,120 +156,125 @@ function tgw ($rawcommand){
 
     #sets up Splunk 
     function PromptFor-Splunk{
-        function InstallSplunkForwarder{
-            $splunk= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Source\ | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"} -ErrorAction SilentlyContinue)
-           
-            if (!$splunk){
-                Clear-Host
-                #header
-                Write-Host "[Error]" -ForegroundColor red
-                Write-Output "No splunk Forwarder Detected in $env:USERPROFILE\Desktop\TheGreaterWall\Source\"
-                Write-Output "You must provide the Splunk forwarder. It is not included in the default zip download for The Greater Wall."
-                write-output " "
-                pause
-                break
+        if ($splunkconfiguration -eq "1" -or !$splunkconfiguration){
+            function InstallSplunkForwarder{
+                $splunk= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Source\ | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"} -ErrorAction SilentlyContinue)
+               
+                if (!$splunk){
+                    Clear-Host
+                    #header
+                    Write-Host "[Error]" -ForegroundColor red
+                    Write-Output "No splunk Forwarder Detected in $env:USERPROFILE\Desktop\TheGreaterWall\Source\"
+                    Write-Output "You must provide the Splunk forwarder. It is not included in the default zip download for The Greater Wall."
+                    write-output " "
+                    pause
+                    break
+                }
+            
+                if ($splunk){
+                    Clear-Host
+                    header
+                    Write-Output "Enter the IP and port of your splunk server (ex: 127.0.0.1:9997)"
+                    $serverlocation= Read-Host -Prompt " "
+                    $x= 0
+                    
+                    while ($x -lt 2){
+                        clear-host
+                        header
+                        
+                        if ($x -eq 0){
+                            $action= "Create a"
+                        }
+                        
+                        if ($x -eq 1){
+                            $action= "Retype the"
+                        }
+                            
+                        write-output "$action password for the Splunk Forwarder"
+                        new-variable -name "pass$x" -Value $(Read-Host -Prompt " ") -Force -ErrorAction SilentlyContinue
+                        $x++
+                    }
+            
+                    $diff= Compare-Object $pass0 $pass1
+            
+                    if ($diff){
+                        Clear-Host
+                        write-output "Passwords do not match."
+                        sleep 2
+                        InstallSplunkForwarder
+                    }
+            
+                    if (!$diff){
+                        $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
+                        msiexec.exe /i $splunk_forwarder RECEIVING_INDEXER="$serverlocation" SPLUNKPASSWORD=password AGREETOLICENSE=Yes /quiet
+                    }
+                }      
             }
-        
-            if ($splunk){
-                Clear-Host
-                header
-                Write-Output "Enter the IP and port of your splunk server (ex: 127.0.0.1:9997)"
-                $serverlocation= Read-Host -Prompt " "
-                $x= 0
+    
+            clear-host
+            header
+            Write-Output "The Greater Wall can Forward logs to a local or remote splunk server"
+            write-output " "
+            write-output "1.) Configure forwarding to local Splunk instance"
+            Write-Output "2.) Configure Forwarding to remote Splunk server"
+            Write-Output "3.) Skip Splunk Configuration"
+            $splunkchoice= Read-Host -Prompt " "
+            
+            if ($splunkchoice -eq "2"){
+                InstallSplunkForwarder
+                new-variable -name Logaggregatorchoice -value "SplunkForwarder" -Scope global -ErrorAction SilentlyContinue
+            }
+            
+            if ($splunkchoice -eq "1"){
+                $splunkservice= get-service -name Splunkd | where {$_.status -eq "Running"}
+                $splunkweb= Invoke-WebRequest -uri "http://127.0.0.1:8000/en-US/app/launcher/home"
+                new-variable -name Logaggregatorchoice -value "Splunkd" -Scope global -ErrorAction SilentlyContinue
                 
-                while ($x -lt 2){
+                if ($splunkweb.StatusCode -eq 200 -and $splunkservice){
                     clear-host
                     header
-                    
-                    if ($x -eq 0){
-                        $action= "Create a"
-                    }
-                    
-                    if ($x -eq 1){
-                        $action= "Retype the"
-                    }
-                        
-                    write-output "$action password for the Splunk Forwarder"
-                    new-variable -name "pass$x" -Value $(Read-Host -Prompt " ") -Force -ErrorAction SilentlyContinue
-                    $x++
+                    Write-host "[Success]" -ForegroundColor Green
+                    Write-Output "Splunkd service is running"
+                    Write-host "[Success]" -ForegroundColor Green
+                    Write-Output "The Greater Wall detected Splunk Web hosted at 127.0.0.1:8000"
+                    Write-Output " "
+                    Write-Output "Make sure to Configure the settings from the splunk web page:"
+                    Write-Output "    -Settings->Data Inputs->Local Event Log Collection | Choose 'TGW' in the available logs menu."
+                    write-output " "
+                    pause
                 }
         
-                $diff= Compare-Object $pass0 $pass1
-        
-                if ($diff){
-                    Clear-Host
-                    write-output "Passwords do not match."
-                    sleep 2
-                    InstallSplunkForwarder
+                if (!$splunkservice){
+                    clear-host
+                    header
+                    Write-host "[Error]" -ForegroundColor Red
+                    Write-Output "Splunk service not detected or not running"
                 }
-        
-                if (!$diff){
-                    $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
-                    msiexec.exe /i $splunk_forwarder RECEIVING_INDEXER="$serverlocation" SPLUNKPASSWORD=password AGREETOLICENSE=Yes /quiet
+                                
+                if ($splunkweb.StatusCode -ne "200"){
+                    clear-host
+                    header
+                    Write-host "[Error]" -ForegroundColor Red
+                    Write-Output "Splunk web not detected"
+                    Write-Output "Please ensure that you install Splunk Enterprise, free or otherwise."
+                    Write-Output "The splunk binaries are not included in the default zip file for The Greater Wall"
+                    Write-Output " "
+                    pause
                 }
-            }      
-        }
-    
-        clear-host
-        header
-        Write-Output "The Greater Wall can Forward logs to a local or remote splunk server"
-        write-output " "
-        write-output "1.) Configure forwarding to local Splunk instance"
-        Write-Output "2.) Configure Forwarding to remote Splunk server"
-        Write-Output "3.) Skip Splunk Configuration"
-        $splunkchoice= Read-Host -Prompt " "
-    
-        if ($splunkchoice -eq "2"){
-            InstallSplunkForwarder
-        }
-        
-        if ($splunkchoice -eq "1"){
-            $splunkservice= get-service -name Splunkd | where {$_.status -eq "Running"}
-            $splunkweb= Invoke-WebRequest -uri "http://127.0.0.1:8000/en-US/app/launcher/home"
-            
-            if ($splunkweb.StatusCode -eq 200 -and $splunkservice){
-                clear-host
-                header
-                Write-host "[Success]" -ForegroundColor Green
-                Write-Output "Splunkd service is running"
-                Write-host "[Success]" -ForegroundColor Green
-                Write-Output "The Greater Wall detected Splunk Web hosted at 127.0.0.1:8000"
-                Write-Output " "
-                Write-Output "Make sure to Configure the settings from the splunk web page:"
-                Write-Output "    -Settings->Data Inputs->Local Event Log Collection | Choose 'TGW' in the available logs menu."
-                write-output " "
-                pause
             }
     
-            if (!$splunkservice){
-                clear-host
+            if ($splunkchoice -eq "3"){
+                Clear-Host
                 header
-                Write-host "[Error]" -ForegroundColor Red
-                Write-Output "Splunk service not detected or not running"
-            }
-                            
-            if ($splunkweb.StatusCode -ne "200"){
+                Write-Output "Skipping Splunk setup"
+                sleep 2
                 clear-host
-                header
-                Write-host "[Error]" -ForegroundColor Red
-                Write-Output "Splunk web not detected"
-                Write-Output "Please ensure that you install Splunk Enterprise, free or otherwise."
-                Write-Output "The splunk binaries are not included in the default zip file for The Greater Wall"
-                Write-Output " "
-                pause
             }
         }
-    
-        if ($splunkchoice -eq "3"){
-            Clear-Host
-            header
-            Write-Output "Skipping Splunk setup"
-            sleep 2
-            clear-host
-        }
+        New-Variable -name splunkconfiguration -value "0" -Force -scope global -ErrorAction SilentlyContinue
     }   
-    
-    #Uninstalls Splunk Forwarder
+        
+        #Uninstalls Splunk Forwarder
     function UninstallSplunkForwarder{
         $service= Get-WmiObject win32_service | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}
         $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
@@ -338,7 +343,8 @@ function tgw ($rawcommand){
                 header
                 write-host "Security onion IP and port configured as -- $securityonionip --."     
                 write-output " "                                 
-                new-variable -name tgw_logbeatconfiguration -value 1 -scope global    
+                new-variable -name tgw_logbeatconfiguration -value 1 -scope global  
+                new-variable -name LogAggregatorChoice -value "TGWLB" -Scope global -ErrorAction SilentlyContinue
                 pause
                 clear-host                          
 
@@ -1855,6 +1861,8 @@ function tgw ($rawcommand){
         write-output 'Command= "Reset-TGWLogbeat"       Description= Re-configure the settings for the TGW_Logbeat Forwarder'
         write-output 'Command= "uninstall-TGWLogbeat"   Description= Removes the (TGWLB) Service and Removes the files from C:\Windows\Temp'
         write-output 'Command= "beat-sync"              Description= Creates local event logs from results and forwards them to Security Onion'
+        write-output 'Command= "splunk-sync"            Description= Creates local event logs from results and forwards them to splunk'
+        write-output 'Command= "reset-splunk"           Description= Re-configure the settings for splunk forwarding'
         write-output 'Command= "back"                   Description= Go back to the main menu'
         write-output " "
         pause
@@ -2502,6 +2510,11 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             if (!$($listofips | where {$_ -eq "$endpoint"})){
                 clear-host
                 Write-Output "Adding $endpoint"
+
+                if ($($listofips.count) -eq 0){
+                    $listofips= @()
+                }
+
                 $listofips+= $endpoint
                 Remove-Variable -name endpoint -Force -ErrorAction SilentlyContinue
                 New-Variable -name listofips -Value $listofips -Force -ErrorAction SilentlyContinue -Scope global
@@ -2577,28 +2590,52 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 
     #syncs results to SecOnion Via WinLogBeat
     function beat-sync{
-        function build-class{
-            $outputclass= [pscustomobject][ordered]@{
-            AlternateDataStreams= "100"
-            CrashedApplications= "101"
-            DllInformation= "102"
-            EnumerateUSB= "103"
-            HotFixes= "104"
-            ImageFileExecutionOptions= "105"
-            InstalledSoftware= "106"
-            NetworkConnections= "107"
-            persistence= "108"
-            Prefetch= "109"
-            ProcessInfo= "110"
-            ProcessTree= "111"
-            ServiceInfo= "112"
-            smb="113"
-            TasksScheduled= "114"
-            }
-         return $outputclass
-        } 
+        #function build-class{
+            #$outputclass= [pscustomobject][ordered]@{
+            #AlternateDataStreams= "100"
+            #CrashedApplications= "101"
+            #DllInformation= "102"
+            #EnumerateUSB= "103"
+            #HotFixes= "104"
+            #ImageFileExecutionOptions= "105"
+            #InstalledSoftware= "106"
+            #NetworkConnections= "107"
+            #persistence= "108"
+            #Prefetch= "109"
+            #ProcessInfo= "110"
+            #ProcessTree= "111"
+            #ServiceInfo= "112"
+            #smb="113"
+            #TasksScheduled= "114"
+            #}
+         #return $outputclass
+        #} 
 
-        $log_ids= build-class
+        $log_ids= Get-Content $env:userprofile\Desktop\TheGreaterWall\Modules\Modules.conf | convertfrom-csv -Delimiter ":" | where {$_.p2 -eq "LogID"} | select p1,p3
+
+        if ($logaggregatorchoice -eq "Splunkd"){
+            $servicename= "Splunkd"
+        }
+
+        if ($logaggregatorchoice -eq "TGWLB"){
+            $servicename= "TGWLB"
+        }
+
+        if ($logaggregatorchoice -eq "SplunkForwarder"){
+            $servicename= "SplunkForwarder"
+        }
+                
+        $service= get-service -name $servicename
+
+        if ($service.Status -ne "Running"){
+            clear-host
+            header
+            Write-host "[ERROR]"
+            write-output "$logaggregatorchoice Service is not running. Nothing has been sync'd. Please fix the service and try again."
+            Write-Output " "
+            pause
+            break
+        }
 
         Clear-host
         New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue
@@ -2613,7 +2650,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
 
             #check to make sure you only sync the files that havent already been sync'd
-            $alreadySyncd= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedBeatSyncs.txt
+            $alreadySyncd= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedlogSyncs.txt
             
             if ($alreadySyncd){
                 $filesToSync= $(Compare-Object $files $alreadySyncd | where {$_.sideindicator -eq "<="}).inputobject
@@ -2625,14 +2662,14 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 
             foreach ($file in $filesToSync){
                 $name= $file.split('-')[1]
-                $logID= $log_ids.$name
+                $logID= $($log_ids | where {$_.p1 -eq "$name"}).p3
 
                 if (!$logID){
                     $logID= "200"
                 }
 
                 $fullname= $file
-                $fullname>>$env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedBeatSyncs.txt
+                $fullname>>$env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedlogSyncs.txt
                 $content= Get-Content $fullname | convertfrom-csv
                         
                 foreach ($c in $content){
@@ -2776,18 +2813,26 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         Remove-Variable -name action -force -ErrorAction SilentlyContinue -Scope global
         new-variable -name action -value $(Read-Host '#TheGreaterWall') -force
 
-        #check to see if the user is issuing framework administrative commands
+        #check to see if the user is issuing framework administrative commands, number commands, or playbook commands
+
+        if ($action.split(',').count -le 1){
+            if ($($action | sls -Pattern "[0-9]{1,3}").Matches.value){
+                [int]$action= $action
+                Set-Variable -name action -Value $([int]$action) -scope global -force
+            }
     
-        if ($($action | sls -Pattern "[0-9]{1,3}").Matches.value){
-            [int]$action= $action
-            Set-Variable -name action -Value $([int]$action) -scope global -force
+            if ($($action.gettype().name) -eq "String"){
+                set-variable -name action -value $action -scope global -force
+            }
         }
 
-        if ($($action.gettype().name) -eq "String"){
-            set-variable -name action -value $action -scope global -force
+        if ($action.split(',').count -gt 1){
+            $action= $action.split(',')
+            $action= $action | % {[int]$_}
+            Set-Variable -name action -Value $($action) -scope global -force
+            Set-Variable -name "playbook" -value "1" -scope global -Force            
         }
     }
-
     #Main Execution
     #Run all setup functions
 
@@ -2795,6 +2840,13 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
     setup-framework
 
     #Process raw commands if they are issued by the user
+    if ($rawcommand -eq "splunk-sync"){
+        clear-host
+        beat-sync
+        clear-host
+        break
+    }
+
     if ($rawcommand -eq "Beat-sync"){
         clear-host
         beat-sync
@@ -2991,7 +3043,13 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         #Evaluate action to see if its an admin command or an integer choice from the menu
         #if the datat type is an integer, jump to line 1200-ish
 
-        $datatype= $action.gettype().name
+        if ($action.count -eq 1){
+            $datatype= $action.gettype().name
+        }
+
+        if ($action.count -gt 1){
+            $datatype= $($action | % {$_.gettype().name})[0]
+        }
 
         #Check to see if the action is a string. If so, it is an 'admin command'
         if ($datatype -eq "String"){
@@ -3131,6 +3189,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 Uninstall-TGWLogBeat
                 Setup-TGW_Logbeat
             }     
+
+            if ($action -eq "Reset-splunk"){
+                clear-host
+                Remove-Variable -name splunkconfiguration -Scope global
+                PromptFor-Splunk
+            }                
                                
             if ($action -eq "hail-mary"){
                 clear-host
@@ -3238,10 +3302,22 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         }
     
         #Check to see if hailmary was desired action. If there is more than 1 action its hail-mary.
-        if ($action.count -gt 1){
+        if ($action.count -gt 1){        
             #hail-mary
             clear-host
-            write-output "Executing hail-mary"
+            if ($playbook -ne 1){
+                write-output "Executing hail-mary"
+            }
+            if ($playbook -eq 1){
+                Write-Output "Running Selected modules"
+                $actioncontainer= @()
+                foreach ($a in $action){
+                    $index= $a-1
+                    $actioncontainer+= $(Get-ChildItem $modulepath)[$index].name
+                }
+                $action= $actioncontainer
+            }
+
             sleep 2           
 
             foreach ($a in $action){
