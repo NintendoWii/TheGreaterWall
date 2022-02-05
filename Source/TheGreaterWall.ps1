@@ -154,6 +154,153 @@ function tgw ($rawcommand){
         }
     }
 
+    #sets up Splunk 
+    function PromptFor-Splunk{
+        function InstallSplunkForwarder{
+            $splunk= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Source\ | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"} -ErrorAction SilentlyContinue)
+           
+            if (!$splunk){
+                Clear-Host
+                #header
+                Write-Host "[Error]" -ForegroundColor red
+                Write-Output "No splunk Forwarder Detected in $env:USERPROFILE\Desktop\TheGreaterWall\Source\"
+                Write-Output "You must provide the Splunk forwarder. It is not included in the default zip download for The Greater Wall."
+                write-output " "
+                pause
+                break
+            }
+        
+            if ($splunk){
+                Clear-Host
+                header
+                Write-Output "Enter the IP and port of your splunk server (ex: 127.0.0.1:9997)"
+                $serverlocation= Read-Host -Prompt " "
+                $x= 0
+                
+                while ($x -lt 2){
+                    clear-host
+                    header
+                    
+                    if ($x -eq 0){
+                        $action= "Create a"
+                    }
+                    
+                    if ($x -eq 1){
+                        $action= "Retype the"
+                    }
+                        
+                    write-output "$action password for the Splunk Forwarder"
+                    new-variable -name "pass$x" -Value $(Read-Host -Prompt " ") -Force -ErrorAction SilentlyContinue
+                    $x++
+                }
+        
+                $diff= Compare-Object $pass0 $pass1
+        
+                if ($diff){
+                    Clear-Host
+                    write-output "Passwords do not match."
+                    sleep 2
+                    InstallSplunkForwarder
+                }
+        
+                if (!$diff){
+                    $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
+                    msiexec.exe /i $splunk_forwarder RECEIVING_INDEXER="$serverlocation" SPLUNKPASSWORD=password AGREETOLICENSE=Yes /quiet
+                }
+            }      
+        }
+    
+        clear-host
+        header
+        Write-Output "The Greater Wall can Forward logs to a local or remote splunk server"
+        write-output " "
+        write-output "1.) Configure forwarding to local Splunk instance"
+        Write-Output "2.) Configure Forwarding to remote Splunk server"
+        Write-Output "3.) Skip Splunk Configuration"
+        $splunkchoice= Read-Host -Prompt " "
+    
+        if ($splunkchoice -eq "2"){
+            InstallSplunkForwarder
+        }
+        
+        if ($splunkchoice -eq "1"){
+            $splunkservice= get-service -name Splunkd | where {$_.status -eq "Running"}
+            $splunkweb= Invoke-WebRequest -uri "http://127.0.0.1:8000/en-US/app/launcher/home"
+            
+            if ($splunkweb.StatusCode -eq 200 -and $splunkservice){
+                clear-host
+                header
+                Write-host "[Success]" -ForegroundColor Green
+                Write-Output "Splunkd service is running"
+                Write-host "[Success]" -ForegroundColor Green
+                Write-Output "The Greater Wall detected Splunk Web hosted at 127.0.0.1:8000"
+                Write-Output " "
+                Write-Output "Make sure to Configure the settings from the splunk web page:"
+                Write-Output "    -Settings->Data Inputs->Local Event Log Collection | Choose 'TGW' in the available logs menu."
+                write-output " "
+                pause
+            }
+    
+            if (!$splunkservice){
+                clear-host
+                header
+                Write-host "[Error]" -ForegroundColor Red
+                Write-Output "Splunk service not detected or not running"
+            }
+                            
+            if ($splunkweb.StatusCode -ne "200"){
+                clear-host
+                header
+                Write-host "[Error]" -ForegroundColor Red
+                Write-Output "Splunk web not detected"
+                Write-Output "Please ensure that you install Splunk Enterprise, free or otherwise."
+                Write-Output "The splunk binaries are not included in the default zip file for The Greater Wall"
+                Write-Output " "
+                pause
+            }
+        }
+    
+        if ($splunkchoice -eq "3"){
+            Clear-Host
+            header
+            Write-Output "Skipping Splunk setup"
+            sleep 2
+            clear-host
+        }
+    }   
+    
+    #Uninstalls Splunk Forwarder
+    function UninstallSplunkForwarder{
+        $service= Get-WmiObject win32_service | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}
+        $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
+    
+        if (!$service){
+            clear-host 
+            header
+            Write-Output "-No splunk Service Detected"
+        }
+        
+        if (!$splunk_forwarder){
+            Clear-Host
+            header
+            Write-Output "No Splunk.exe detected"
+        }
+    
+        try{
+            if ($service){
+                $service.StopService()
+                Start-Sleep -s 1
+                $service.delete()           
+            }
+        }
+        catch{
+            $splunk_home= 'C:\Program Files\SplunkUniversalForwarder\bin'
+            "$splunkhome\splunk.exe stop"
+        }
+
+        msiexec.exe /x $splunk_forwarder
+    }
+
     #Sets up winlogbeat forwarder parameters
     function Setup-TGW_Logbeat{
         if ($tgw_logbeatconfiguration -eq "0" -or !$tgw_logbeatconfiguration){
@@ -1210,7 +1357,25 @@ function tgw ($rawcommand){
             }
         }  
                  
-                
+        function set-sensitivity{
+            Remove-Variable -name sensitivity -Scope global -Force -ErrorAction SilentlyContinue
+            clear-host
+            header
+            write-output "Choose sensitivty level for detecting outlyers"
+            write-output "1.) High (Singletons only)"
+            Write-Output "2.) Normal (Less than 1/2 the queried endpoints)"
+            $sensitivity= read-host -Prompt " "
+            New-Variable -name sensitivity -Value $sensitivity -ErrorAction SilentlyContinue -Scope global
+        
+            if ($sensitivity -ne "1" -and $sensitivity -ne "2"){
+                clear-host
+                Write-Output "Invalid Choice"
+                sleep 2
+                Clear-Host
+                set-sensitivity
+            }
+        }
+          
         Function identify-outlyers ($inputdata){
             $start= get-date
             new-item -ItemType Directory -Path $postprocessingpath\AnalysisResults -name OutlyerAnalysis -ErrorAction SilentlyContinue | out-null
@@ -1245,15 +1410,21 @@ function tgw ($rawcommand){
                 if ($output){
                     $refinedoutput= $output | ConvertFrom-Csv
                 
-                    #define number of endpoints as half of the total count
-                    $numberofendpoints= $($refinedoutput.$ipproperty | sort -Unique).count/2
-                        
-                    #round up if decimal
-                    if ($numberofendpoints.ToString() | select-string "\."){
-                        $numberofendpoints= $($numberofendpoints.tostring().split("\."))[0]
-                        $numberofendpoints= [int]$numberofendpoints+1
+                    if ($sensitivity -eq "2"){
+                        #define number of endpoints as half of the total count
+                        $numberofendpoints= $($refinedoutput.$ipproperty | sort -Unique).count/2
+                            
+                        #round up if decimal
+                        if ($numberofendpoints.ToString() | select-string "\."){
+                            $numberofendpoints= $($numberofendpoints.tostring().split("\."))[0]
+                            $numberofendpoints= [int]$numberofendpoints+1
+                        }
                     }
-                
+                    
+                    if ($sensitivity -eq "1"){
+                        $numberofendpoints= "1"
+                    }
+                                    
                     $sketch= @()
                     $finalout= @()
                     #find only lone occurences
@@ -1295,6 +1466,12 @@ function tgw ($rawcommand){
         if (!$postprocessingpath){
             break
         }
+
+        ############################
+        #Set the outlyer sensitivity
+        ############################
+        set-sensitivity
+
         #######################
         #Reformat all datasets#
         #######################
@@ -1303,7 +1480,6 @@ function tgw ($rawcommand){
         $totalstart= get-date
         $start= get-date
         
-        $resultspath;pause
         #Extract the CSV potion of the PowerShell logs and write them to a csv file each endpoints post processing folder prior to building the master reference        
         
         if ($(Get-ChildItem C:\Users\user1\desktop\TheGreaterWall\Results -Force -Recurse | where {$_.Parent -notlike "*postprocess*" -and $_.name -notlike "*postprocess*"} | where {$_.name -like "*powershell*"})){
@@ -2440,11 +2616,11 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             $alreadySyncd= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\CompletedBeatSyncs.txt
             
             if ($alreadySyncd){
-                $filesToSync= $(Compare-Object $($files.fullname) $alreadySyncd | where {$_.sideindicator -eq "<="}).inputobject
+                $filesToSync= $(Compare-Object $files $alreadySyncd | where {$_.sideindicator -eq "<="}).inputobject
             }
 
             if (!$alreadySyncd){
-                $filesToSync= $files.fullname
+                $filesToSync= $files
             }
 
             foreach ($file in $filesToSync){
@@ -2645,6 +2821,10 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             clear-host
         }
     }
+
+    #prompt the user for Splunk configuration params
+    PromptFor-Splunk
+
     #prompt the user for TGW_Logbeat configuration params
     Setup-TGW_Logbeat
 
@@ -2841,6 +3021,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
 
             if ($action -eq "beat-sync"){
+                Remove-Variable -name action -Force -ErrorAction SilentlyContinue
+                beat-sync
+                set-location $env:userprofile\desktop\thegreaterwall\results
+            }
+
+            if ($action -eq "splunk-sync"){
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
                 beat-sync
                 set-location $env:userprofile\desktop\thegreaterwall\results
