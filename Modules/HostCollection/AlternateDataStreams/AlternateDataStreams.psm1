@@ -5,8 +5,9 @@
             Hostname= $null
             DateCollected= $null
             Source= "AlternateDataStreams"
-            Stream= $null
-            ZoneIdentifier= $null            
+            File = "$null"
+            AlternateDataStream= $null
+            RelativeName= $null            
         }
     return $outputclass
     } 
@@ -23,11 +24,13 @@
         $results= build-class
 
         $ZoneIdentifier = $(Get-Content -Path "$Streams" -Stream Zone.Identifier)-join'-'
+        $relativename= $Streams.split('\')[-1]
 
         $results.Hostname= $hostname
         $results.DateCollected= $date
-        $results.Stream= $Streams
-        $results.ZoneIdentifier= $ZoneIdentifier
+        $results.File= $Streams
+        $results.AlternateDataStream= $ZoneIdentifier
+        $results.RelativeName= $relativename
         $output+= $results | convertto-json
         }
     $output | ConvertFrom-Json | convertto-csv -NoTypeInformation
