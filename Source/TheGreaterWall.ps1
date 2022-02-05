@@ -3309,6 +3309,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 write-output "Executing hail-mary"
             }
             if ($playbook -eq 1){
+                Set-Variable -name playbook -value 0 -Force -ErrorAction SilentlyContinue -Scope global
                 Write-Output "Running Selected modules"
                 $actioncontainer= @()
                 foreach ($a in $action){
