@@ -1711,6 +1711,7 @@ function tgw ($rawcommand){
     function tgw-reset{
         $globalvars= @()
         $globalvars+= "action"
+        $globalvars+= "Completedconnectiontest"
         $globalvars+= "credential"
         $globalvars+= "credentials"
         $globalvars+= "datasets"
@@ -1721,8 +1722,29 @@ function tgw ($rawcommand){
         $globalvars+= "postprocessingpath"
         $globalvars+= "resultspath"
         $globalvars+= "setupstate"
-        $globalvars+= "Completedconnectiontest"
         $globalvars+= "status"
+        $globalvars+="action"
+        $globalvars+="activedirectoryconfiguration"
+        $globalvars+="completedconnectiontest"
+        $globalvars+="connectionstatus"
+        $globalvars+="credentials"
+        $globalvars+="datasets"
+        $globalvars+="DCcreds"
+        $globalvars+="domaincontrollerip"
+        $globalvars+="foldernames"
+        $globalvars+="listofips"
+        $globalvars+="Logaggregatorchoice"
+        $globalvars+="mode"
+        $globalvars+="modstatus"
+        $globalvars+="playbook"
+        $globalvars+="postprocessfoldernames"
+        $globalvars+="postprocessingpath"
+        $globalvars+="resultspath"
+        $globalvars+="securityonionip"
+        $globalvars+="sensitivity"
+        $globalvars+="setupstate"
+        $globalvars+="splunkconfiguration"
+        $globalvars+="tgw_logbeatconfiguration"
         
 
         foreach ($g in $globalvars){
