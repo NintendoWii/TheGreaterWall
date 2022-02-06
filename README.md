@@ -5,7 +5,8 @@
 * Creation Date: December 2019
 * Release Date: 05 November 2021
 * Version: 2.0
-
+#### Important
+* Make sure to always download the latest copy of The Greater Wall to ensure you have the most up to date features and bug fixes.
 #### PowerShell - PowerShell Hunt and data collection framework
 * Agentless
 * Written entirely in PowerShell
