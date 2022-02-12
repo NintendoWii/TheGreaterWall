@@ -195,7 +195,8 @@ function tgw ($rawcommand){
             
                     if (!$diff){
                         $splunk_forwarder= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\source | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"}).fullname
-                        msiexec.exe /i $splunk_forwarder RECEIVING_INDEXER="$serverlocation" SPLUNKPASSWORD=password AGREETOLICENSE=Yes /quiet
+                        #msiexec.exe /i $splunk_forwarder RECEIVING_INDEXER="$serverlocation" SPLUNKPASSWORD=password AGREETOLICENSE=Yes /quiet
+                        msiexec.exe /i $splunk_forwarder
                     }
                 } 
                                 
