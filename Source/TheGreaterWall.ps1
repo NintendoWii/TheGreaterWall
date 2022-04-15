@@ -452,7 +452,8 @@ function tgw ($rawcommand){
 
                         if (!$netconnection){
                             $x= 0
-                            while ($true){
+                            $y= 0
+                            while ($true -and $y -eq "0"){
                                 sleep 2                        
                                 $netconnection= Get-NetTCPConnection | where {$_.RemoteAddress -eq "$ip" -and $_.RemotePort -eq "$port"}
                                 $netconnection >> $env:userprofile\Desktop\TheGreaterWall\TGWLogs\Netconnectionlog.txt
@@ -466,6 +467,8 @@ function tgw ($rawcommand){
                                         clear-host
                                         header
                                         write-host "[Success] TGW_Logbeat is running and is communicating with Security Onion Node specified in C:\Windows\Temp\TGW_Logbeat.yml"
+                                        sleep 2
+                                        $y= 1
                                     }
 
                                     if ($netconnection.state -ne "Established"){
@@ -2664,7 +2667,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         Limit-EventLog -LogName TGW -MaximumSize 4000000KB -ErrorAction SilentlyContinue
         
         $beatsync_SB={
-            $log_ids= $args[0]
+            $log_ids= $args
             $dirs= get-childitem $env:USERPROFILE\Desktop\TheGreaterWall\results | where {$_.name -notlike "*Postprocess*" -and $_.name -notlike "*activedirectory*" -and $_.name -notlike "*log*"}
             $files=@()
             foreach ($d in $dirs){
