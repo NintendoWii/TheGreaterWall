@@ -52,6 +52,19 @@ Function ImageFileExecutionOptions{
             }
         }
     }
+        
+    if (!$output){
+        $results= build-class
+        $results.IP= "null"
+        $results.Hostname= $hostname
+        $results.DateCollected= "null"
+        $results.Source= "ImageFileExecuionOptions"
+        $results.Regpath= "null"
+        $results.Key= "null"
+        $results.Value= "null"
+        $results.KeyVal= "null"
+        $output= $results | convertto-json
+    }
     $output | ConvertFrom-Json | ConvertTo-Csv -NoTypeInformation
 }
 
