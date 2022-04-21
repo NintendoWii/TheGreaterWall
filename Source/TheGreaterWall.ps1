@@ -26,16 +26,23 @@ function tgw ($rawcommand){
     #Check Winrm and report an error if not enabled
     if ($(get-service -name winrm).status -eq "Stopped"){
         clear-host
+        write-host "[ERROR]" -ForegroundColor Red
         write-output "WinRM service is not running"
         Write-Output "You must start WinRM"
-        Write-Output "Example: start-service -name WinRM"
+        Write-Output 'Example: start-service -name WinRM'
+        Write-Output 'Example: enable-psremoting -force'
+        write-output " "
+        pause
+        break
     }
 
-    #Check Trustedhosts
-    if (!$(get-item WSMan:\localhost\Client\TrustedHosts).value){
-        write-output "Trusted hosts value is null"
-        write-output "You may need to set your trusted hosts value."
-        write-output "Example: set-item WSMan:\localhost\Client\TrustedHosts -value * -Force"
+    if ($(get-service -name winrm).status -eq "Running"){
+        #Check Trustedhosts
+        if (!$(get-item WSMan:\localhost\Client\TrustedHosts).value){
+            write-output "Trusted hosts value is null"
+            write-output "You may need to set your trusted hosts value."
+            write-output "Example: set-item WSMan:\localhost\Client\TrustedHosts -value * -Force"
+        }
     }
 
     #Clean the action variable to make it available for the next action you plan on conducting
