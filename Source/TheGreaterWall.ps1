@@ -1394,10 +1394,10 @@ function tgw ($rawcommand){
                     $finalout+= $sketch
                 }
                 
-                $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged
+                $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged -ErrorAction SilentlyContinue
              
                 new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
-                $finalout= $finalout | ConvertTo-Csv -NoTypeInformation
+                $finalout= $finalout | ConvertTo-Csv -NoTypeInformation -ErrorAction SilentlyContinue
 
                 if ($finalout){
                     $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
