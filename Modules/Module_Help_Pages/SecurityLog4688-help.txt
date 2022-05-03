@@ -1,0 +1,15 @@
+Help page for SecurityLog4688
+
+What it does:
+A New Process has been created
+Queries the security log id 4688 and gathers information about newly created processes
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
