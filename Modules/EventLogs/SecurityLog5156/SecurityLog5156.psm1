@@ -50,7 +50,7 @@ function SecurityLog5156{
         $results.Index= $Index
         $results.TimeGenerated= $TimeGenerated
         $results.TimeWritten= $TimeWritten
-        $results.Applicationpath= $Application
+        $results.Applicationpath= $Applicationpath
         $results.Applicationname= $applicationname
         $results.Direction= $Direction
         $results.SourceAddress= $SAdd
