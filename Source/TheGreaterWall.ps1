@@ -1398,7 +1398,10 @@ function tgw ($rawcommand){
              
                 new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
                 $finalout= $finalout | ConvertTo-Csv -NoTypeInformation
-                $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
+
+                if ($finalout){
+                    $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
+                }
                 $end= Get-Date               
             }
         }  
@@ -1640,7 +1643,7 @@ function tgw ($rawcommand){
                 }
             }
         }
-    
+
          ###################
          #End Postprocessor#
          ###################
@@ -2652,26 +2655,6 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 
     #syncs results to SecOnion Via WinLogBeat
     function beat-sync{
-        #function build-class{
-            #$outputclass= [pscustomobject][ordered]@{
-            #AlternateDataStreams= "100"
-            #CrashedApplications= "101"
-            #DllInformation= "102"
-            #EnumerateUSB= "103"
-            #HotFixes= "104"
-            #ImageFileExecutionOptions= "105"
-            #InstalledSoftware= "106"
-            #NetworkConnections= "107"
-            #persistence= "108"
-            #Prefetch= "109"
-            #ProcessInfo= "110"
-            #ProcessTree= "111"
-            #ServiceInfo= "112"
-            #smb="113"
-            #TasksScheduled= "114"
-            #}
-         #return $outputclass
-        #} 
 
         $log_ids= Get-Content $env:userprofile\Desktop\TheGreaterWall\Modules\Modules.conf | convertfrom-csv -Delimiter ":" | where {$_.p2 -eq "LogID"} | select p1,p3
 
