@@ -1,0 +1,17 @@
+Help page for SystemLog7036
+
+What it does:
+Change in running state of a service.
+Queries the system log id 7036 and gathers information about stopping and starting services.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
+ 
+ 
