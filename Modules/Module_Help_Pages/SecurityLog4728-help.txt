@@ -1,0 +1,15 @@
+Help page for SecurityLog4728
+
+What it does:
+A member was added to a security-enabled global group.
+Queries the security log id 4728 and gathers information about local group memberships
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
