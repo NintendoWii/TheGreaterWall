@@ -1,0 +1,14 @@
+Help page for SecurityLog1102
+What it does:
+The Audit Log Was Cleared.
+Queries the security log id 1102 for evidence of the event logs being cleared
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
