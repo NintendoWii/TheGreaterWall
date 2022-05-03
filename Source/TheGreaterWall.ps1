@@ -55,7 +55,39 @@ function tgw ($rawcommand){
         ================================`n"    
     }
 
-    #Imports the raw bytes of the .dll needed to query AD without having DStools installed 
+    #Creates running Opnotes file
+    function LogTo-Opnotes($action){
+        function get-cmdletsused($action){
+            $manpage= Get-Childitem $env:USERPROFILE\Desktop\TheGreaterWall\Modules\Module_help_pages\ | where {$_.name -eq "$action-help.txt"} | get-content
+            $manpage_entry= $manpage | Select-String "CmdLets used:"
+
+            if (!$manpage_entry){
+                $cmdletsused= "Information Unavailable"
+            }
+
+            if ($manpage_entry){
+                $line_start= $($manpage | Select-String "CmdLets used:").LineNumber
+                $line_end= $($manpage | Select-String "Output format").LineNumber -3
+                $cmdletsused= $($manpage[$($line_start)..$($line_end)] | % {$_.trimstart().trimend()})-join(", ")
+            }
+
+            return $cmdletsused
+        }
+    
+        $logfile= "$env:USERPROFILE\Desktop\TheGreaterWall\TGWLogs\OpNotes.txt"
+        $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
+        $targets= $($listofips)-join(", ")
+        $cmdletsused= get-cmdletsused $action  
+    
+        Write-output "*************************************" | out-file -Append -FilePath $logfile
+        Write-Output "$date" | out-file -Append -FilePath $logfile
+        Write-Output "Action: $action" | out-file -Append -FilePath $logfile
+        Write-Output "Targets: $targets" | out-file -Append -FilePath $logfile
+        Write-Output "Powershell Commands used: $cmdletsused" | out-file -Append -FilePath $logfile
+        Write-Output "*************************************" | out-file -Append -FilePath $logfile
+    }
+
+    #Imports AD module
     function Import-ActiveDirectory{
         if ($activedirectoryconfiguration -eq "0" -or !$activedirectoryconfiguration){
             clear-host
@@ -542,9 +574,7 @@ function tgw ($rawcommand){
             pause
             clear-host
         }
-    }
-
-        
+    }   
 
     #Tests the WINRM connectivity to the target IPs
     function get-wsmanconnection ($listofips){
@@ -3354,6 +3384,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             sleep 2           
 
             foreach ($a in $action){
+                LogTo-Opnotes $action
                 #The active directory module needs to be executed differently, because not every targeted endpoint needs to query AD. It would be too redundant.
                 
                 if ($a -like "*activedirectory*"){
@@ -3453,6 +3484,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 
                 #If the action is valid, continue on to execution
                 if ($availableactions -contains $action){
+                    LogTo-Opnotes $action
 
                     #The active directory module needs to be executed differently, because not every targeted endpoint needs to query AD. It would be too redundant.
                     if ($action -like "*activedirectory*"){
