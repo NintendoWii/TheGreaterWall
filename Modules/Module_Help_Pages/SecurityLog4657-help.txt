@@ -1,0 +1,15 @@
+Help page for SecurityLog4657
+
+What it does:
+A Registry Value was Modified
+Queries the Security log id 4657 and gathers information about registry modifications.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
