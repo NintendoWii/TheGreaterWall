@@ -1,0 +1,16 @@
+Help page for SystemLog7034
+
+What it does:
+A service terminated unexpectedly.
+Queries the system log id 7034 and gathers information about services that terminated unexpectedly.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
+ 
