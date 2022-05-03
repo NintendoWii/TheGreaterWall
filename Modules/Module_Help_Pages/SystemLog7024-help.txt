@@ -1,0 +1,15 @@
+Help page for SystemLog7000
+
+What it does:
+A service terminated with service-specific error.
+Queries the system log id 7024 and gathers information about services that terminated with errors.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
