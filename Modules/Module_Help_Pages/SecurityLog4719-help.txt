@@ -1,0 +1,15 @@
+Help page for SecurityLog4719
+
+What it does:
+System Audit Policy has been changed
+Queries the security log id 4719 and gathers information about changes to the audit policy.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
