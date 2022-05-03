@@ -9,7 +9,8 @@ function SecurityLog5156{
             Index= $null
             TimeGenerated= $null
             TimeWritten= $null
-            Application= $null
+            Applicationpath= $null
+            Applicationname= $null
             Direction= $null
             SourceAddress= $null
             SourcePort= $null
@@ -33,7 +34,8 @@ function SecurityLog5156{
         $Index = $i.Index
         $TimeGenerated = $i.TimeGenerated
         $TimeWritten = $i.TimeWritten
-        $Application = $i.ReplacementStrings[1]
+        $Applicationpath = $i.ReplacementStrings[1]
+        $applicationname= $Applicationpath.split('\')[-1]
         $Direction = $i.ReplacementStrings[2]
         $SAdd = $i.ReplacementStrings[3]
         $SPort = $i.ReplacementStrings[4]
@@ -48,7 +50,8 @@ function SecurityLog5156{
         $results.Index= $Index
         $results.TimeGenerated= $TimeGenerated
         $results.TimeWritten= $TimeWritten
-        $results.Application= $Application
+        $results.Applicationpath= $Application
+        $results.Applicationname= $applicationname
         $results.Direction= $Direction
         $results.SourceAddress= $SAdd
         $results.SourcePort= $SPort
