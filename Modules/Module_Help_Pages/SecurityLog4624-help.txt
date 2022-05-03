@@ -1,0 +1,15 @@
+Help page for SecurityLog4624
+
+What it does:
+Successful logon.
+Queries the security log id 4624 and gathers information about sucessful logons.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
