@@ -1,0 +1,15 @@
+Help page for SecurityLog4724
+
+What it does:
+An attempt was made to reset an accounts password
+queries the security log id 4724 and gathers information about password reset attempts
+
+CmdLets used:
+	Get-WinEvent
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
