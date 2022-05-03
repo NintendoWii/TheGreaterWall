@@ -1,0 +1,15 @@
+Help page for SecurityLog5156
+
+What it does:
+The Windows Filtering Platform has allowed a connection.
+Queries the security log id 5156 and gathers information about network connections
+
+CmdLets used:
+	Get-eventlog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
