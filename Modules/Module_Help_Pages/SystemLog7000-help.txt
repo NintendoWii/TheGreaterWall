@@ -1,0 +1,15 @@
+Help page for SystemLog7000
+
+What it does:
+A Service failed to start.
+Queries the system log id 7000 and gathers information about services that failed to start
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
