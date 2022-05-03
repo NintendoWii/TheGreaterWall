@@ -101,6 +101,9 @@ function setup-framework
             }              
 
         set-location $env:userprofile\desktop\thegreaterwall
+	#unblock everything
+        $unblockfiles= $(Get-ChildItem -Force -Recurse | where {$_.Extension -eq ".ps1" -or $_.Extension -eq ".psm1"}).fullname
+        $unblockfiles | % {Unblock-File -Path $_}
         clear-host
         Write-Output "Finished setting up framework and dependecies"
 	    Write-Output "To use The Greater Wall, open PowerShell ISE as Administrator and"
