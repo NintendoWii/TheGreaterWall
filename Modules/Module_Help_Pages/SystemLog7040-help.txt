@@ -1,0 +1,16 @@
+Help page for SystemLog7040
+
+What it does:
+Settings of a service have been changed
+Queries the system log id 7040 and gathers information about changes to service settings.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
+ 
