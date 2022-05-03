@@ -1576,8 +1576,8 @@ function tgw ($rawcommand){
             $content >$filename
 
             #make new file with no headers in the postprocessingpath
-            $content[1..($content.count)] >$outputdirectory\$datatype-postprocessed_nh.csv
-            $content >$outputdirectory\$datatype-postprocessed.csv
+            $content[1..($content.count)] >>$outputdirectory\$datatype-postprocessed_nh.csv
+            $content >>$outputdirectory\$datatype-postprocessed.csv
         }                   
                 
         $totalend= get-date
