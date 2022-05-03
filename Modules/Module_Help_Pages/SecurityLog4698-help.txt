@@ -1,0 +1,15 @@
+Help page for SecurityLog4698
+
+What it does:
+A Scheduled Task Has Been Created
+Queries the security log id 4698 and gathers information about newly created scheduled tasks.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
