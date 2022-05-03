@@ -1,0 +1,17 @@
+Help page for SystemLog7045
+
+What it does:
+New service was installed
+Queries the system log id 7045 and gathers information about newly installed services.
+
+CmdLets used:
+	Get-EventLog
+	Get-Date
+	
+Output format:
+	CSV
+
+Sample output:
+	
+ 
+ 
