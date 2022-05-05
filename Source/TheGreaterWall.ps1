@@ -2022,8 +2022,7 @@ function tgw ($rawcommand){
         }
 
         set-location $env:userprofile\desktop\thegreaterwall
-        $env:PSModulePath= "$env:userprofile\documents\windowspowershell\modules;c:\windows\system32\windowspowershell\v1.0\modules
-        ;$env:userprofile\desktop\TheGreaterWall\modules;$env:userprofile\desktop\TheGreaterWall\modules\eventlogs;$env:userprofile\desktop\TheGreaterWall\modules\hostcollection"
+        $env:PSModulePath= "$env:userprofile\documents\windowspowershell\modules;c:\windows\system32\windowspowershell\v1.0\modules;$env:userprofile\desktop\TheGreaterWall\modules;$env:userprofile\desktop\TheGreaterWall\modules\eventlogs;$env:userprofile\desktop\TheGreaterWall\modules\hostcollection;$env:userprofile\desktop\TheGreaterWall\modules\Framework_dependency_modules"
         set-location $env:userprofile\desktop\thegreaterwall
     }
 
@@ -2742,6 +2741,14 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 $foldername= $name
             }
 
+            if ($name -like "*Auditpolicy*"){
+                $target= $($name-split("-"))[0]
+                $content= get-job -id $($Job.id) | receive-job                
+                $content= $content-replace("Target:NULL","Target: $target")
+                $content | out-file -Append -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\OpNotes.txt
+                remove-job -id $($job.id)
+            }
+
             else{
                 $filename= $name+".txt"
                 $foldername= $name.split('-')[0]
@@ -3343,9 +3350,106 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 write-output "You are already in the framework. This command is only used to get back into the framework from a shell session"
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
                 pause
-            }                
-        }
+            }
+            
+            if ($action -eq "Modify-AuditPolicy"){
+                Remove-Variable -name success -Force -ErrorAction SilentlyContinue
+                Remove-Variable -name failure -Force -ErrorAction SilentlyContinue
+                function choose-log{
+                    $logs= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Modules\eventlogs).name | where {$_ -ne "SecurityLog1102" -and $_ -ne "PowerShellLogs" -and $_ -ne "Modify-Auditpolicy"}    
+                    clear-host
+                    write-output "Choose the log you'd like to enable or disable"
+                    $x= 1
+                    $logs | % {write-output "$x.) $_"; $x++}
+                    $choice= read-host -Prompt " "
     
+                    if ($choice -lt 1 -or $choice -eq $x){
+                        Clear-Host
+                        Write-Output "Invalid Selection"
+                        sleep 1
+                        choose-log
+                    }
+                    
+                    $choice= [int]$choice - 1
+                    $choice= $logs[$choice]
+                    new-variable -name eventlog -Value $choice -Scope global -force
+                }
+                
+                function choose-action($eventlog){
+                    clear-host
+                    write-output "Choose which actions to perform on *$eventlog*"
+                    write-output "This will be performed on all $($listofips.count) target(s) that you've specified."
+                    write-output " "
+                    Write-Output "1.) Enable Success"
+                    Write-Output "2.) Enable Failure"
+                    Write-Output "3.) Disable Success"
+                    Write-Output "4.) Disable Failure"
+                    write-output "5.) Go back"
+                    $choice= read-host -prompt " "
+                
+                    if ($choice -lt 1 -and $choice -gt 5){
+                        clear-host
+                        write-output "Invalid Choice"
+                        sleep 1
+                        choose-action
+                    }
+                
+                    if ($choice -eq "5"){
+                        clear-host                                           
+                    }
+    
+                    if ($choice -eq "1"){
+                        new-variable -name success -value "enable" -Scope global -force
+                    }
+                
+                    if ($choice -eq "2"){
+                        new-variable -name failure -value "enable" -Scope global -force
+                    }
+                
+                    if ($choice -eq "3"){
+                        new-variable -name success -value "disable" -Scope global -force
+                    }
+                
+                    if ($choice -eq "4"){
+                        new-variable -name failure -value "disable" -Scope global -force
+                    }
+                }
+                
+                        
+                choose-log
+                
+                choose-action $eventlog
+                
+                if ($success -or $failure){     
+                    $moduleconfiguration= get-content $env:USERPROFILE\desktop\TheGreaterWall\Modules\Modules.conf | convertfrom-csv -Delimiter ":" | where {$_.p1 -eq "$eventlog" -and $_.p2 -eq "AuditMod"}
+                    $category= $($moduleconfiguration.p3).split(',')[0]
+                    $subcategory= $($moduleconfiguration).p3.split(',')[1]
+                           
+                    $eventlog= "'" + $eventlog + "'"
+                    $success= "'" + $success + "'"
+                    $failure= "'" + $failure + "'"
+                    $category= "'" + $category + "'"
+                    $subcategory= "'" + $subcategory + "'"
+                       
+                    import-module Modify-auditpolicy   
+                    $actioncode= $(get-module -name Modify-AuditPolicy).Definition
+                    $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
+                    $actioncode= $actioncode-replace('000',$eventlog)
+                    $actioncode= $actioncode-replace('111',$success)
+                    $actioncode= $actioncode-replace('222',$failure)
+                    $actioncode= $actioncode-replace('333',$category)
+                    $actioncode= $actioncode-replace('444',$subcategory)
+                    $actioncode= [scriptblock]::Create($actioncode)
+                    remove-module -name Modify-auditpolicy
+                    
+                    foreach ($ip in $listofips){
+                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-Auditpolicy-$date" -ArgumentList $eventlog,$success,$failure -AsJob
+                    }                                   
+                }
+            }
+        
+        }
+
         #Check to see if hailmary was desired action. If there is more than 1 action its hail-mary.
         if ($action.count -gt 1){        
             #hail-mary
