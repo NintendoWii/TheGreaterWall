@@ -56,7 +56,7 @@ function setup-framework
         copy-item -Path $currentlocation\modules\Module_Help_Pages -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\ -Container  
 	
 	#Move Framework Dependency Modules
-	copy-item -Path $currentlocation\modules\Framework_Dependency_Modules\Modify-AuditPolicy -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\Framework_Dependency_Modules -Container
+	copy-item -Path $currentlocation\Framework_Dependency_Modules\Modify-AuditPolicy -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\Framework_Dependency_Modules -Container
 	
         ####Move all modules to the new folder
         $modules= $(get-childitem -force -Recurse $currentlocation | where {$_.extension -eq ".psm1"}) | sort -Unique
