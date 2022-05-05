@@ -1928,6 +1928,7 @@ function tgw ($rawcommand){
         write-output 'Command= "beat-sync"              Description= Creates local event logs from results and forwards them to Security Onion'
         write-output 'Command= "splunk-sync"            Description= Creates local event logs from results and forwards them to splunk'
         write-output 'Command= "reset-splunk"           Description= Re-configure the settings for splunk forwarding'
+        write-output 'Command= "Modify-Auditpolicy"     Description= Enable or disable the logging behavior of the Target Endpoints'
         write-output 'Command= "back"                   Description= Go back to the main menu'
         write-output " "
         pause
@@ -3358,7 +3359,9 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 function choose-log{
                     $logs= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Modules\eventlogs).name | where {$_ -ne "SecurityLog1102" -and $_ -ne "PowerShellLogs" -and $_ -ne "Modify-Auditpolicy"}    
                     clear-host
+                    header
                     write-output "Choose the log you'd like to enable or disable"
+                    write-output " "
                     $x= 1
                     $logs | % {write-output "$x.) $_"; $x++}
                     $choice= read-host -Prompt " "
