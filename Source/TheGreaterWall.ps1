@@ -3423,7 +3423,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 
                 choose-action $eventlog
                 
-                if ($success -or $failure){     
+                if ($success -or $failure){    
                     $moduleconfiguration= get-content $env:USERPROFILE\desktop\TheGreaterWall\Modules\Modules.conf | convertfrom-csv -Delimiter ":" | where {$_.p1 -eq "$eventlog" -and $_.p2 -eq "AuditMod"}
                     $category= $($moduleconfiguration.p3).split(',')[0]
                     $subcategory= $($moduleconfiguration).p3.split(',')[1]
