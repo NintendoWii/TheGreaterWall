@@ -11,6 +11,7 @@ function setup-framework
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall" -name "TgwLogs" -Force
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\TgwLogs" -name "PowerShell_Master_Reference" -Force
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Module_Help_Pages" -Force 
+	new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Framework_Dependency_Modules" -Force 
         #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source" -name "Baselineresults" -Force
         #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Server-2019" -Force  
         #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Server-1809" -Force  
@@ -37,6 +38,7 @@ function setup-framework
         try
             {
             copy-item -path "$currentlocation/source/TheGreaterWall.ps1" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TheGreaterWall.ps1"
+            copy-item -path "$currentlocation/source/TGW_Logbeat.yml" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TGW_Logbeat.yml"
             }
 
         catch
@@ -51,9 +53,11 @@ function setup-framework
         copy-item -path $currentlocation\modules\modules.conf -destination $env:userprofile\Desktop\TheGreaterWall
         move-item -path $env:userprofile\desktop\thegreaterwall\modules.conf -Destination $env:userprofile\desktop\thegreaterwall\modules\modules.conf
 
-        copy-item -Path $currentlocation\modules\Module_Help_Pages -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\ -Container
-        #move-item -path $env:userprofile\desktop\thegreaterwall\module_help_pages -Destination $env:userprofile\desktop\thegreaterwall\modules\module_help_pages  
-
+        copy-item -Path $currentlocation\modules\Module_Help_Pages -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\ -Container  
+	
+	#Move Framework Dependency Modules
+	copy-item -Path $currentlocation\modules\Framework_Dependency_Modules\Modify-AuditPolicy -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\Framework_Dependency_Modules -Container
+	
         ####Move all modules to the new folder
         $modules= $(get-childitem -force -Recurse $currentlocation | where {$_.extension -eq ".psm1"}) | sort -Unique
         clear-host
@@ -100,6 +104,9 @@ function setup-framework
             }              
 
         set-location $env:userprofile\desktop\thegreaterwall
+	#unblock everything
+        $unblockfiles= $(Get-ChildItem -Force -Recurse | where {$_.Extension -eq ".ps1" -or $_.Extension -eq ".psm1"}).fullname
+        $unblockfiles | % {Unblock-File -Path $_}
         clear-host
         Write-Output "Finished setting up framework and dependecies"
 	    Write-Output "To use The Greater Wall, open PowerShell ISE as Administrator and"
