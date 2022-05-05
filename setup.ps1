@@ -56,7 +56,7 @@ function setup-framework
         copy-item -Path $currentlocation\modules\Module_Help_Pages -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\ -Container  
 	
 	#Move Framework Dependency Modules
-	copy-item -Path $currentlocation\Framework_Dependency_Modules\Modify-AuditPolicy -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules\Framework_Dependency_Modules -Container
+	copy-item -Path $currentlocation\Framework_Dependency_Modules -Recurse -Destination $env:userprofile\Desktop\TheGreaterWall\modules -Container
 	
         ####Move all modules to the new folder
         $modules= $(get-childitem -force -Recurse $currentlocation | where {$_.extension -eq ".psm1"}) | sort -Unique
@@ -85,7 +85,7 @@ function setup-framework
         
         Set-Location $env:userprofile\desktop\thegreaterwall\modules
 
-        $modules= Get-ChildItem $env:userprofile\Desktop\TheGreaterWall\modules | where {$_.name -notlike "eventlogs*" -and $_.name -notlike "Hostcollection*" -and $_.name -ne "Module_Help_Pages" -and $_.name -ne "modules.conf"}
+        $modules= Get-ChildItem $env:userprofile\Desktop\TheGreaterWall\modules | where {$_.name -notlike "eventlogs*" -and $_.name -notlike "Hostcollection*" -and $_.name -ne "Module_Help_Pages" -and $_.name -ne "modules.conf" -and $_.name -ne "Modify-AuditPolicy" -and $_.name -ne "Framework_Dependency_Modules"}
 
         #move modules to their correct folder (HostCollection or EventLogs)
 
@@ -102,7 +102,7 @@ function setup-framework
 
             move-item $h $env:userprofile\Desktop\TheGreaterWall\modules\hostcollection
             }              
-
+	  remove-item $env:userprofile\Desktop\TheGreaterWall\Modules\Modify-AuditPolicy -force -recurse
         set-location $env:userprofile\desktop\thegreaterwall
 	#unblock everything
         $unblockfiles= $(Get-ChildItem -Force -Recurse | where {$_.Extension -eq ".ps1" -or $_.Extension -eq ".psm1"}).fullname
