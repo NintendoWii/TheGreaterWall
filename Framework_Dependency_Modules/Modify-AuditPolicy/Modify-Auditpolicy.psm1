@@ -1,4 +1,4 @@
-function Modify-Auditpolicy($eventlog,$success,$failure){
+﻿function Modify-Auditpolicy($eventlog,$success,$failure){
     $eventlog= 000
     $success= 111
     $failure= 222
@@ -20,19 +20,43 @@ function Modify-Auditpolicy($eventlog,$success,$failure){
         $policy_obj
     }
     
-    $original_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category" -and $_.subcategory -eq "$subcategory"}
+    if ($category -ne $subcategory){
+        $original_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category" -and $_.subcategory -eq "$subcategory"}
+    }
+
+    if ($category -eq $subcategory){
+        $original_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category"}
+    }
     
     if ($success){
-        $auditpolicy_change={C:\windows\system32\auditpol.exe /set /Subcategory:$($args[0]) /success:$($args[1]) | Out-Null}     
-        Invoke-Command $auditpolicy_change -ArgumentList $subcategory,$success
+        if ($category -eq "System"){
+            $auditpolicy_change={C:\windows\system32\auditpol.exe /set /category:"system" /success:$($args) | Out-Null}
+            Invoke-Command $auditpolicy_change -ArgumentList $success
+            $new_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category" -and $_.subcategory -eq "$subcategory"}
+        }
+
+        if ($category -ne "System"){
+            $auditpolicy_change={C:\windows\system32\auditpol.exe /set /Subcategory:$($args[0]) /success:$($args[1]) | Out-Null}     
+            Invoke-Command $auditpolicy_change -ArgumentList $subcategory,$success
+            $new_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category" -and $_.subcategory -eq "$subcategory"}
+        }
     }
     
     if ($failure){
-        $auditpolicy_change={C:\windows\system32\auditpol.exe /set /Subcategory:$($args[0]) /failure:$($args[1]) | Out-Null}
-        Invoke-Command $auditpolicy_change -ArgumentList $subcategory,$failure
+        if ($category -eq "System"){
+            $auditpolicy_change={C:\windows\system32\auditpol.exe /set /Subcategory:"System" /failure:$($args) | Out-Null}
+            Invoke-Command $auditpolicy_change -ArgumentList $failure
+            $new_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category"}
+        }
+
+        if ($category -ne "System"){
+            $auditpolicy_change={C:\windows\system32\auditpol.exe /set /Subcategory:$($args[0]) /failure:$($args[1]) | Out-Null}
+            Invoke-Command $auditpolicy_change -ArgumentList $subcategory,$failure
+            $new_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category" -and $_.subcategory -eq "$subcategory"}
+        }
     }
     
-    $new_policy= Build-PolicyObject $eventlog | convertfrom-csv | where {$_.category -eq "$category" -and $_.subcategory -eq "$subcategory"}
+    
     
     $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
     write-output "*************************************"
