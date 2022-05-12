@@ -2526,7 +2526,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 clear-variable -name choice -Force -ErrorAction SilentlyContinue
  }
    
-   function add-target{
+    function add-target{
     Clear-Variable -name endpoint -Force -ErrorAction SilentlyContinue
     clear-host
     header
@@ -2742,12 +2742,19 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 $foldername= $name
             }
 
-            if ($name -like "*Auditpolicy*"){
+            if ($name -like "*baseline-AuditPolicy*"){
+                $target= $($name-split("-"))[0]
+                $content= get-job -id $($Job.id) | receive-job
+                new-item -Path "$env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\" -Name Auditpol_backup -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
+                $content | Out-File -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\$($target)_auditpolicy_backup.csv
+            }
+                
+            if ($name -like "*Auditpolicy*" -and $name -notlike "*baseline*"){
                 $target= $($name-split("-"))[0]
                 $content= get-job -id $($Job.id) | receive-job                
                 $content= $content-replace("Target:NULL","Target: $target")
                 $content | out-file -Append -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\OpNotes.txt
-                remove-job -id $($job.id)
+                remove-job -id $($job.id)                
             }
 
             else{
@@ -2886,6 +2893,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             Set-Variable -name "playbook" -value "1" -scope global -Force            
         }
     }
+    
     #Main Execution
     #Run all setup functions
 
@@ -3311,7 +3319,6 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 remove-variable -name modstatus -Force -ErrorAction SilentlyContinue
             }
 
-
             if ($action -eq "show-creds"){
                 clear-host
                 write-output "You are operating with creds from the follwing user account:"
@@ -3356,101 +3363,172 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             if ($action -eq "Modify-AuditPolicy"){
                 Remove-Variable -name success -Force -ErrorAction SilentlyContinue
                 Remove-Variable -name failure -Force -ErrorAction SilentlyContinue
-                function choose-log{
-                    $logs= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Modules\eventlogs).name | where {$_ -ne "SecurityLog1102" -and $_ -ne "PowerShellLogs" -and $_ -ne "Modify-Auditpolicy"}    
+                $allevent_Ids= Get-Content $env:userprofile\Desktop\TheGreaterWall\Source\all_securitylogs.conf | convertfrom-csv
+                clear-host
+                header
+                write-output "Choose an option below to enable a Windows Security Log"
+                Write-Output "1.) Manually type one or more Log IDs"
+                Write-Output "2.) Choose from a list"
+                Write-Output " "
+                $choice= read-host -Prompt " "
+
+                if ($choice -ne "1" -and $choice -ne "2"){
+                    clear-host
+                    write-output "Invalid Selection"
+                    sleep 1
+                    clear-host
+                }
+
+                if ($choice -eq "2"){
+                    $logs= $allevent_Ids | Out-GridView -PassThru
+                }
+
+                if ($choice -eq "1"){
                     clear-host
                     header
-                    write-output "Choose the log you'd like to enable or disable"
-                    write-output " "
-                    $x= 1
-                    $logs | % {write-output "$x.) $_"; $x++}
-                    $choice= read-host -Prompt " "
-    
-                    if ($choice -lt 1 -or $choice -eq $x){
-                        Clear-Host
-                        Write-Output "Invalid Selection"
-                        sleep 1
-                        choose-log
-                    }
+                    Write-Output "Please type one or more Log Ids"
+                    Write-Output "(Example: 4688,4624,5156)"
+                    write-output  " "
+                    $userinput= read-host -Prompt " "
+                    $userinput= $userinput.split(',').trimstart().trimend()
                     
-                    $choice= [int]$choice - 1
-                    $choice= $logs[$choice]
-                    new-variable -name eventlog -Value $choice -Scope global -force
+                    $logs= @()
+                    foreach ($u in $userinput){
+                        $logs+= $allevent_Ids | where {$_.log -eq "$u"}
+                    }
                 }
+
+                clear-host
+                header
+                write-output "You are about to enable the following logs on all $($listofips.count) target(s)"
+                Write-Output " "
+                foreach ($l in $logs){
+                   $l.Description
+                }
+                write-output " "
+                pause
+
+                #Create Scriptblock to baseline the current auditpolicy
+                $action={function Build-PolicyObject{
+                   $auditpol_categories= $(C:\windows\system32\auditpol.exe /get /category:* | select-string -Pattern ^[A-Z])
+                   $auditpol_categories= $auditpol_categories[2..$($auditpol_categories.count)]
+                   $policy_obj=@("Category,Subcategory, Policy")
+                                               
+                   foreach ($c in $auditpol_categories){
+                      $subcategories= C:\windows\system32\auditpol.exe /get /category:$c | select-string -Pattern ^" "
+                      foreach ($s in $subcategories){
+                          $s= $s.tostring()-split('  ') | % {$_.trimstart().trimend()}
+                          $policy_obj+= "$($c.tostring()),$($s[1]),$($s[$($s.count -1)])"
+                          }
+                      }
+                   $policy_obj
+                  }
+                  Build-PolicyObject
+                  }
+                $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                $actioncode= [scriptblock]::Create($action)
                 
-                function choose-action($eventlog){
+                foreach ($ip in $listofips){
+                    $backupfile= "$env:userprofile\desktop\TheGreaterWall\TgwLogs\AuditPol_backup\" + "$ip" + "_auditpolicy_backup.csv"
+                    if (!$(get-item -Path $backupfile -ErrorAction SilentlyContinue)){
+                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-baseline-Auditpolicy-$date" -AsJob
+                    }
+                }
+
+                #create Scriptblock to Change Audit policy
+                $action=@()
+                $action+= $logs.command-join(';')
+                $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                $actioncode = [scriptblock]::Create($action)
+
+                foreach ($ip in $listofips){                  
+                    
+                    invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-Auditpolicy-$date" -AsJob
+                   
+                    #write to TGW Logs for Opnotes
+                    $opnotes=@()
+                    $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
+                    $opnotes+= $date
+                    $opnotes+= "*************************************"
+                    $opnotes+= "Action: Modified Audit Policy"
+                    $opnotes+= "Target:$ip"
+                    $opnotes+= "Commands Executed:"
+                    $opnotes+= $action.split(';')
+                    $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
+                }
+                Clear-host
+                header
+                Write-Output " "
+                Write-Output "You've changed the audit policy on $($listofips.count) Target(s)."
+                write-output "In order for The Greater Wall to process the request, it must exit."
+                Write-Output "Please type TGW to get back info the framework after pressing enter."
+                write-output " "
+                remove-variable -name action -Scope global -Force -ErrorAction SilentlyContinue
+                pause
+                break                            
+            }  
+            
+            if ($action -eq "Restore-Auditpolicy"){
+                foreach ($ip in $listofips){
+                    $original_Policy= "$env:userprofile\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\" + "$ip" + "_auditpolicy_backup.csv"
+                    $original_Policy= Get-Content $original_Policy | convertfrom-csv
+                    $original_Policy | Add-Member -NotePropertyName "Command" -NotePropertyValue "$null"
+
+                    foreach ($o in $original_Policy){
+                        if ($o.policy -eq "Success"){
+                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Enable /failure:Disable"
+                        }
+
+                        if ($o.policy -eq "Failure"){
+                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Disable /failure:Enable"
+                        }
+
+                        if ($o.policy -eq "Success and Failure"){
+                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Enable /failure:Enable"
+                        }
+
+                        if ($o.policy -eq "No Auditing"){
+                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Disable /failure:Disable"
+                        }
+                    }  
+
+                    #prepare to restore the Audit policy
+                    $action=@()
+                    $action+= $original_Policy.command-join(';')
+                    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                    $actioncode = [scriptblock]::Create($action)
+
                     clear-host
-                    write-output "Choose which actions to perform on *$eventlog*"
-                    write-output "This will be performed on all $($listofips.count) target(s) that you've specified."
+                    header
+                    write-output "You are about to restore the audit policies on $($listofips.count) target(s) back to their default."
                     write-output " "
-                    Write-Output "1.) Enable Success"
-                    Write-Output "2.) Enable Failure"
-                    Write-Output "3.) Disable Success"
-                    Write-Output "4.) Disable Failure"
-                    write-output "5.) Go back"
-                    $choice= read-host -prompt " "
-                
-                    if ($choice -lt 1 -and $choice -gt 5){
-                        clear-host
-                        write-output "Invalid Choice"
-                        sleep 1
-                        choose-action
-                    }
-                
-                    if ($choice -eq "5"){
-                        clear-host                                           
-                    }
+                    pause
     
-                    if ($choice -eq "1"){
-                        new-variable -name success -value "enable" -Scope global -force
-                    }
-                
-                    if ($choice -eq "2"){
-                        new-variable -name failure -value "enable" -Scope global -force
-                    }
-                
-                    if ($choice -eq "3"){
-                        new-variable -name success -value "disable" -Scope global -force
-                    }
-                
-                    if ($choice -eq "4"){
-                        new-variable -name failure -value "disable" -Scope global -force
-                    }
-                }
-                
-                        
-                choose-log
-                
-                choose-action $eventlog
-                
-                if ($success -or $failure){    
-                    $moduleconfiguration= get-content $env:USERPROFILE\desktop\TheGreaterWall\Modules\Modules.conf | convertfrom-csv -Delimiter ":" | where {$_.p1 -eq "$eventlog" -and $_.p2 -eq "AuditMod"}
-                    $category= $($moduleconfiguration.p3).split(',')[0]
-                    $subcategory= $($moduleconfiguration).p3.split(',')[1]
-                           
-                    $eventlog= "'" + $eventlog + "'"
-                    $success= "'" + $success + "'"
-                    $failure= "'" + $failure + "'"
-                    $category= "'" + $category + "'"
-                    $subcategory= "'" + $subcategory + "'"
-                       
-                    import-module Modify-auditpolicy   
-                    $actioncode= $(get-module -name Modify-AuditPolicy).Definition
-                    $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
-                    $actioncode= $actioncode-replace('000',$eventlog)
-                    $actioncode= $actioncode-replace('111',$success)
-                    $actioncode= $actioncode-replace('222',$failure)
-                    $actioncode= $actioncode-replace('333',$category)
-                    $actioncode= $actioncode-replace('444',$subcategory)
-                    $actioncode= [scriptblock]::Create($actioncode)
-                    remove-module -name Modify-auditpolicy
-                    
-                    foreach ($ip in $listofips){
-                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-Auditpolicy-$date" -ArgumentList $eventlog,$success,$failure -AsJob
-                    }                                   
-                }
-            }
-        
+                    invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Restore-Auditpolicy-$date" -AsJob                              
+                   
+                    #write to TGW Logs for Opnotes
+                    $opnotes=@()
+                    $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
+                    $opnotes+= $date
+                    $opnotes+= "*************************************"
+                    $opnotes+= "Action: Restored Audit Policy back to default"
+                    $opnotes+= "Target:$ip"
+                    $opnotes+= "Commands Executed:"
+                    $opnotes+= $action.split(';')
+                    $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
+                }             
+              
+                Clear-host
+                header
+                Write-Output " "
+                Write-Output "You've changed the audit policy on $($listofips.count) Target(s)."
+                write-output "In order for The Greater Wall to process the request, it must exit."
+                Write-Output "Please type TGW to get back info the framework after pressing enter."
+                write-output " "
+                remove-variable -name action -Scope global -Force -ErrorAction SilentlyContinue
+                pause
+                break  
+            }    
         }
 
         #Check to see if hailmary was desired action. If there is more than 1 action its hail-mary.
