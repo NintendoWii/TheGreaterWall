@@ -10,12 +10,7 @@ function setup-framework
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall" -name "Results" -Force
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall" -name "TgwLogs" -Force
         new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\TgwLogs" -name "PowerShell_Master_Reference" -Force
-        new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Module_Help_Pages" -Force 
-	  new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Framework_Dependency_Modules" -Force 
-        #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source" -name "Baselineresults" -Force
-        #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Server-2019" -Force  
-        #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Server-1809" -Force  
-        #new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\source\Baselineresults" -name "Windows-1809" -Force   
+        new-item -ItemType Directory -Path "$env:userprofile\desktop\TheGreaterWall\modules" -name "Module_Help_Pages" -Force   
         
         #Add new folder to $psmodulepath so powershell can located them when you try to import-module
             if ($env:psmodulepath -notlike "*$env:userprofile\Desktop\TheGreaterWall\modules*")
@@ -39,6 +34,7 @@ function setup-framework
             {
             copy-item -path "$currentlocation/source/TheGreaterWall.ps1" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TheGreaterWall.ps1"
             copy-item -path "$currentlocation/source/TGW_Logbeat.yml" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TGW_Logbeat.yml"
+	    copy-item -path "$currentlocation/source/All_securityLogs.conf" -destination "$env:userprofile\Desktop\TheGreaterWall\source\All_securityLogs.conf"
             }
 
         catch
