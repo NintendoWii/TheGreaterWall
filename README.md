@@ -22,6 +22,10 @@ At the end of the setup, an administrative PowerShell ISE window will open.
 The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
+### New Features
+* Automatically records Op Notes
+* Modify and Restore AuditPolicy to enable event log generation on remote devices
+
 ### Coming soon
 * MITRE ATT&CK crosswalk
 * HTML Report Generation
