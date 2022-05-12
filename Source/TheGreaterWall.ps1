@@ -1929,6 +1929,7 @@ function tgw ($rawcommand){
         write-output 'Command= "splunk-sync"            Description= Creates local event logs from results and forwards them to splunk'
         write-output 'Command= "reset-splunk"           Description= Re-configure the settings for splunk forwarding'
         write-output 'Command= "Modify-Auditpolicy"     Description= Enable or disable the logging behavior of the Target Endpoints'
+        write-output 'Command= "Restore-Auditpolicy"    Description= Restore the Audit POlicy of Targets back to their default policy.'
         write-output 'Command= "back"                   Description= Go back to the main menu'
         write-output " "
         pause
