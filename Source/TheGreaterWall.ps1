@@ -2056,129 +2056,6 @@ function tgw ($rawcommand){
         new-variable -name modstatus -value $($status | convertfrom-csv | sort -Property "Config present in Modules.conf" -Descending) -Scope global -ErrorAction SilentlyContinue
     }
 
-    #Allows user to remove specified IPs from list of targets
-    function remove-target{
-    clear-host
-    header
-    write-output " "
-    Write-Output "***Removing targets***"
-    Write-Output " "
-    write-output "Please choose from the options below."
-    Write-Output " " 
-    $endpoints= $listofips
-    write-output "1.) Choose endpoint From list"
-    write-output "2.) Enter IP manually"
-    Write-Output "3.) Enter Hostname manually"
-    Write-Output "4.) Go back"
-
-    $choice= Read-Host -Prompt " "
-
-    if ($choice -ne "1" -and $choice -ne "2" -and $choice -ne "3" -and $choice -ne "4"){
-        clear-host
-        write-output "Invalid selection"
-        sleep 2
-        remove-target
-    }
-
-    if ($choice -eq "1"){
-        clear-host
-        header
-        Write-output "Select a target to remove."
-        $x= 1
-        $choicecontainer= @()
-        $endpoints | % {$choicecontainer+= $_}
-        $options= $endpoints | % {"$x.) $_"; $x++}
-        $options
-        $selection= Read-Host -Prompt " "
-        if (!$($options | where {$_ -like "$selection.)*"} -ErrorAction SilentlyContinue)){
-            clear-host
-            Write-Output "Invalid selection"
-            sleep 2
-            remove-target
-        }
-          
-        [string]$selection= [int]$selection -1
-        $endpoint= $choicecontainer[$selection]
-
-        clear-host
-        header
-        Write-Output "Removing $endpoint"
-        Write-Output " "
-        pause
-        $listofips= $listofips | where {$_ -ne "$endpoint"}
-        Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
-           
-    }
-
-    if ($choice -eq "2"){
-       $regex= "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$"
-         
-        while ($endpoint | Select-String -NotMatch -Pattern $regex -ErrorAction SilentlyContinue){
-            clear-host
-            header
-            Write-Output "Enter IP address that you wish to remove."
-            $endpoint= Read-Host -Prompt " "
-
-            if ($endpoint | Select-String -NotMatch -Pattern $regex){
-                clear-host
-                write-output "Invalid IP address. Try again."
-                sleep 2
-                remove-target
-            }
-        }
-
-        if (!$($listofips | where {$_ -eq "$endpoint"})){
-            clear-host
-            Write-Output "$endpoint was not found in list of targets. Nothing to remove."
-            sleep 2
-        }
-        
-        if ($($listofips | where {$_ -eq "$endpoint"})){   
-            Write-Output "Removing $endpoint"
-            Write-Output " "
-            pause
-            $listofips= $listofips | where {$_ -ne "$endpoint"}
-            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
-        }
-
-    }
-    
-    remove-variable -name selection -ErrorAction SilentlyContinue
-
-    if ($choice -eq "3"){
-        clear-host
-        header
-        Write-Output "Enter hostname that you wish to remove."
-        $endpoint= Read-Host -Prompt " "
-
-        if (!$($listofips | where {$_ -eq "$endpoint"} -ErrorAction SilentlyContinue)){ 
-            clear-host
-            write-output "Invalid hostname. Try again."
-            sleep 2
-            remove-target
-        }
-        
-        if ($($listofips | where {$_ -eq "$endpoint"})){
-            clear-host
-            Write-Output "$endpoint was not found in list of targets. Nothing to remove."
-            sleep 2
-        }
-
-        if ($listofips | where {$_ -eq "$endpoint"}){
-            Write-Output "Removing $endpoint"
-            Write-Output " "
-            pause
-            $listofips= $listofips | where {$_ -ne "$endpoint"}
-            Set-Variable -name listofips -value $listofips -Force -ErrorAction SilentlyContinue -Scope global
-        }
-    }
-
-    if ($choice -eq "4"){
-    }
-
-clear-variable -name choice -Force -ErrorAction SilentlyContinue
- }
-
     #Accepts user specified ip addresses in various formats, to include a file.
     function get-ipaddresses{
         function GenerateIPsFromCidr{
@@ -3103,6 +2980,8 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
     #Actual Execution of framework modules
 
     while ($true){
+        Remove-Variable -name action -Scope global -Force -ErrorAction SilentlyContinue
+        Remove-Variable -name action -Force -ErrorAction SilentlyContinue
         #Display menu and header
         header
 
@@ -3811,7 +3690,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     }                
                 }
             }           
-            clear-host
+            #clear-host
             write-output "All done."
             remove-variable -name action -Scope global -force -ErrorAction SilentlyContinue
         }    
