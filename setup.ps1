@@ -35,6 +35,7 @@ function setup-framework
             copy-item -path "$currentlocation/source/TheGreaterWall.ps1" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TheGreaterWall.ps1"
             copy-item -path "$currentlocation/source/TGW_Logbeat.yml" -destination "$env:userprofile\Desktop\TheGreaterWall\source\TGW_Logbeat.yml"
 	    copy-item -path "$currentlocation/source/All_securityLogs.conf" -destination "$env:userprofile\Desktop\TheGreaterWall\source\All_securityLogs.conf"
+	    copy-item -path "$currentlocation/source/All_Applications_and_services_logs.conf " -destination "$env:userprofile\Desktop\TheGreaterWall\source\All_Applications_and_services_logs.conf 
             }
 
         catch
