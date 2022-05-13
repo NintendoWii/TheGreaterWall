@@ -3404,8 +3404,9 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     }
     
                     #create Scriptblock to Change Audit policy
-                    $action=@()
+                    $action=@()                    
                     $action+= $logs.command-join(';')
+                    $action= 'start-sleep -seconds 60;' + $action
                     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
                     $actioncode = [scriptblock]::Create($action)
     
