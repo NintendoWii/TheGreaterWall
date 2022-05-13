@@ -154,7 +154,7 @@ function tgw ($rawcommand){
                     if ($dcsesh){
                         $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
                         if ($ad){
-                            Clear-Host
+                            clear-host
                             write-output "Active Directory module already loaded."
                             start-sleep -Seconds 1
                         }
@@ -200,7 +200,7 @@ function tgw ($rawcommand){
                 $splunk= $(Get-ChildItem $env:USERPROFILE\Desktop\TheGreaterWall\Source\ | where {$_.name -like "*splunk*" -and $_.name -like "*forwarder*"} -ErrorAction SilentlyContinue)              
             
                 if ($splunk){
-                    Clear-Host
+                    clear-host
                     header
                     Write-Output "Enter the IP and port of your splunk server (ex: 127.0.0.1:9997)"
                     $serverlocation= Read-Host -Prompt " "
@@ -226,7 +226,7 @@ function tgw ($rawcommand){
                     $diff= Compare-Object $pass0 $pass1
             
                     if ($diff){
-                        Clear-Host
+                        clear-host
                         write-output "Passwords do not match."
                         sleep 2
                         InstallSplunkForwarder
@@ -240,7 +240,7 @@ function tgw ($rawcommand){
                 } 
                                 
                 if (!$splunk){
-                    Clear-Host
+                    clear-host
                     #header
                     Write-Host "[Error]" -ForegroundColor red
                     Write-Output "No splunk Forwarder Detected in $env:USERPROFILE\Desktop\TheGreaterWall\Source\"
@@ -303,7 +303,7 @@ function tgw ($rawcommand){
             }
     
             if ($splunkchoice -eq "3"){
-                Clear-Host
+                clear-host
                 header
                 Write-Output "Skipping Splunk setup"
                 sleep 2
@@ -325,7 +325,7 @@ function tgw ($rawcommand){
         }
         
         if (!$splunk_forwarder){
-            Clear-Host
+            clear-host
             header
             Write-Output "No Splunk.exe detected"
         }
@@ -401,7 +401,7 @@ function tgw ($rawcommand){
                 $winlogbeatbinary= $winlogbeatbinary | Out-GridView -PassThru -Title "Choose WinLogbeat Executable"
 
                 if ($winlogbeatbinary -eq "None of these"){
-                    Clear-host
+                    clear-host
                     header
                     write-host "[ERROR/WARNING]" -ForegroundColor DarkYellow
                     Write-output "You must place the Winlogbeat executable at path: $env:userprofile\Desktop\TheGreaterWall\Source\"
@@ -460,13 +460,13 @@ function tgw ($rawcommand){
             
                     "sc start tgwlb" | cmd        
                     Start-Sleep -Seconds 2
-                    Clear-Host
+                    clear-host
 
                     $tgwlb_service= get-service -name tgwlb -ErrorAction SilentlyContinue
 
                     #Check to make sure the service is running and display error if it isn't
                     if ($tgwlb_service.status -ne "Running"){
-                        Clear-Host
+                        clear-host
                         header
                         write-host "[ERROR] Unable to start TGW_Logbeat (TGWLB) Service" -ForegroundColor Red
                         write-host " "
@@ -550,7 +550,7 @@ function tgw ($rawcommand){
     }
 
     Function Uninstall-TGWLogBeat{
-        Clear-host
+        clear-host
         $service = Get-WmiObject -Class Win32_Service -Filter "name='tgwlb'"
 
         if ($service){
@@ -558,7 +558,7 @@ function tgw ($rawcommand){
             Start-Sleep -s 1
             $service.delete()
             Remove-Item -Path C:\windows\temp\TGWLB -Force -Recurse -ErrorAction SilentlyContinue
-            Clear-host
+            clear-host
             header
             Write-output "TGW_Logbeat service has been stopped and deleted and the TGWLB directory has been removed from C:\windows\temp"
             write-output " "
@@ -1420,7 +1420,7 @@ function tgw ($rawcommand){
                 clear-host
                 Write-Output "Invalid Choice"
                 sleep 2
-                Clear-Host
+                clear-host
                 set-sensitivity
             }
         }
@@ -2100,7 +2100,7 @@ function tgw ($rawcommand){
         [string]$selection= [int]$selection -1
         $endpoint= $choicecontainer[$selection]
 
-        Clear-Host
+        clear-host
         header
         Write-Output "Removing $endpoint"
         Write-Output " "
@@ -2448,7 +2448,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
         [string]$selection= [int]$selection -1
         $endpoint= $choicecontainer[$selection]
 
-        Clear-Host
+        clear-host
         header
         Write-Output "Removing $endpoint"
         Write-Output " "
@@ -2683,7 +2683,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             break
         }
 
-        Clear-host
+        clear-host
         New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue
         Limit-EventLog -LogName TGW -MaximumSize 4000000KB -ErrorAction SilentlyContinue
         
@@ -2743,6 +2743,13 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 $foldername= $name
             }
 
+            if ($name -like "*-baseline-AppSvcLogs*"){
+                $target= $($name-split("-"))[0]
+                $content= get-job -id $($Job.id) | receive-job
+                new-item -Path "$env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\" -Name Auditpol_backup -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
+                $content | Out-File -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\$($target)_Apps_Svc_Logs_backup.csv
+            }
+
             if ($name -like "*baseline-AuditPolicy*"){
                 $target= $($name-split("-"))[0]
                 $content= get-job -id $($Job.id) | receive-job
@@ -2751,6 +2758,14 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
                 
             if ($name -like "*Auditpolicy*" -and $name -notlike "*baseline*"){
+                $target= $($name-split("-"))[0]
+                $content= get-job -id $($Job.id) | receive-job                
+                $content= $content-replace("Target:NULL","Target: $target")
+                $content | out-file -Append -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\OpNotes.txt
+                remove-job -id $($job.id)                
+            }
+
+            if ($name -like "*AppSvcLogs*" -and $name -notlike "*baseline*"){
                 $target= $($name-split("-"))[0]
                 $content= get-job -id $($Job.id) | receive-job                
                 $content= $content-replace("Target:NULL","Target: $target")
@@ -2887,14 +2902,15 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
         }
 
-        if ($action.split(',').count -gt 1){
-            $action= $action.split(',')
-            $action= $action | % {[int]$_}
-            Set-Variable -name action -Value $($action) -scope global -force
-            Set-Variable -name "playbook" -value "1" -scope global -Force            
+        if ($($action.gettype().name) -ne "Int32"){
+            if ($action.split(',').count -gt 1){
+                $action= $action.split(',')
+                $action= $action | % {[int]$_}
+                Set-Variable -name action -Value $($action) -scope global -force
+                Set-Variable -name "playbook" -value "1" -scope global -Force            
+            }
         }
     }
-    
     #Main Execution
     #Run all setup functions
 
@@ -3126,7 +3142,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             if ($action -eq "Uninstall-tgwlogbeat"){
                 clear-host
                 Uninstall-TGWLogBeat
-                Clear-host
+                clear-host
             }
 
             if ($action -eq "go-interactive"){
@@ -3182,7 +3198,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             }
                         }
 
-                        if ($jobstatus.length -gt 1){
+                        if ($jobstatus.length -ge 1){
                             $name= $j.Name
                             $state= $j.state
                             $jobs+= "$($j.name),$($j.state),Yes"
@@ -3365,15 +3381,17 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 Remove-Variable -name success -Force -ErrorAction SilentlyContinue
                 Remove-Variable -name failure -Force -ErrorAction SilentlyContinue
                 $allevent_Ids= Get-Content $env:userprofile\Desktop\TheGreaterWall\Source\all_securitylogs.conf | convertfrom-csv
+                $all_application_and_services_logs= Get-Content $env:USERPROFILE\Desktop\TheGreaterWall\Source\All_Applications_and_services_logs.conf | convertfrom-csv
                 clear-host
                 header
-                write-output "Choose an option below to enable a Windows Security Log"
-                Write-Output "1.) Manually type one or more Log IDs"
-                Write-Output "2.) Choose from a list"
+                write-output "Choose an option below to enable an event Log"
+                Write-Output "1.) Manually type one or more Windows Security Event Log IDs"
+                Write-Output "2.) Choose from a list or Security Logs"
+                write-output "3.) Choose from a list of Applications and Services Logs" 
                 Write-Output " "
                 $choice= read-host -Prompt " "
 
-                if ($choice -ne "1" -and $choice -ne "2"){
+                if ($choice -ne "1" -and $choice -ne "2" -and $choice -ne 3){
                     clear-host
                     write-output "Invalid Selection"
                     sleep 1
@@ -3399,112 +3417,196 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     }
                 }
 
+                if ($choice -eq "3"){
+                    function BaselineWindowsLogs{
+                        $windowslogs= @()
+                        $windowslogs+= "Logname,Setting"
+                        
+                        foreach ($l in $(Get-WinEvent -ListLog *)){
+                            $windowslogs+= "$($l.logname),$($l.isenabled)"
+                        }
+                        $windowslogs
+                    }
+                    
+                    $logs= $all_application_and_services_logs.description | Out-GridView -PassThru -Title "Choose one or More Applications and Services Log"
+                    $commands= @()
+
+                    foreach ($l in $logs){
+                        $commands+= $($($all_application_and_services_logs | where {$_.description -eq "$l"}).command)
+                    }
+                    
+                    $commands+= "write-output 1"
+
+                    $actioncode = [scriptblock]::Create($commands-join(';'))
+                }
+
                 clear-host
                 header
                 write-output "You are about to enable the following logs on all $($listofips.count) target(s)"
                 Write-Output " "
-                foreach ($l in $logs){
-                   $l.Description
-                }
-                write-output " "
-                pause
 
-                #Create Scriptblock to baseline the current auditpolicy
-                $action={function Build-PolicyObject{
-                   $auditpol_categories= $(C:\windows\system32\auditpol.exe /get /category:* | select-string -Pattern ^[A-Z])
-                   $auditpol_categories= $auditpol_categories[2..$($auditpol_categories.count)]
-                   $policy_obj=@("Category,Subcategory, Policy")
-                                               
-                   foreach ($c in $auditpol_categories){
-                      $subcategories= C:\windows\system32\auditpol.exe /get /category:$c | select-string -Pattern ^" "
-                      foreach ($s in $subcategories){
-                          $s= $s.tostring()-split('  ') | % {$_.trimstart().trimend()}
-                          $policy_obj+= "$($c.tostring()),$($s[1]),$($s[$($s.count -1)])"
-                          }
-                      }
-                   $policy_obj
-                  }
-                  Build-PolicyObject
-                  }
-                $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-                $actioncode= [scriptblock]::Create($action)
-                
-                foreach ($ip in $listofips){
-                    $backupfile= "$env:userprofile\desktop\TheGreaterWall\TgwLogs\AuditPol_backup\" + "$ip" + "_auditpolicy_backup.csv"
-                    if (!$(get-item -Path $backupfile -ErrorAction SilentlyContinue)){
-                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-baseline-Auditpolicy-$date" -AsJob
+                foreach ($l in $logs){
+                    if ($($l.description)){
+                        $l.description
+                    }
+
+                    if (!$($l.description)){
+                        $l
                     }
                 }
-
-                #create Scriptblock to Change Audit policy
-                $action=@()
-                $action+= $logs.command-join(';')
-                $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-                $actioncode = [scriptblock]::Create($action)
-
-                foreach ($ip in $listofips){                  
-                    
-                    invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-Auditpolicy-$date" -AsJob
-                   
-                    #write to TGW Logs for Opnotes
-                    $opnotes=@()
-                    $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
-                    $opnotes+= $date
-                    $opnotes+= "*************************************"
-                    $opnotes+= "Action: Modified Audit Policy"
-                    $opnotes+= "Target:$ip"
-                    $opnotes+= "Commands Executed:"
-                    $opnotes+= $action.split(';')
-                    $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
-                }
-                Clear-host
-                header
-                Write-Output " "
-                Write-Output "You've changed the audit policy on $($listofips.count) Target(s)."
-                write-output "In order for The Greater Wall to process the request, it must exit."
-                Write-Output "Please type TGW to get back info the framework after pressing enter."
                 write-output " "
-                remove-variable -name action -Scope global -Force -ErrorAction SilentlyContinue
                 pause
-                break                            
-            }  
-            
+
+                if ($choice -eq "3"){
+                    #Get baseline
+                    $baseline= [scriptblock]::Create($(get-content Function:\BaselineWindowsLogs))
+                    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                    
+                    foreach ($ip in $listofips){
+                        $backupfile= "$env:userprofile\desktop\TheGreaterWall\TgwLogs\AuditPol_backup\" + "$ip" + "_Apps_Svc_Logs_backup.csv"
+                        
+                        if (!$(get-item -Path $backupfile -ErrorAction SilentlyContinue)){
+                            invoke-command -ScriptBlock $baseline -ComputerName $ip -Credential $credentials -JobName "$ip-baseline-AppSvcLogs-$date" -AsJob
+                            $opnotes=@()
+                            $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
+                            $opnotes+= $date
+                            $opnotes+= "*************************************"
+                            $opnotes+= "Action: Baselined Audit Policy"
+                            $opnotes+= "Target:$ip"
+                            $opnotes+= "Commands Executed:"
+                            $opnotes+= $baseline.tostring().split(';')
+                            $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
+                        }
+                    }
+
+                    #make Changes
+                    foreach ($ip in $listofips){
+                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-AppSvcLogs-$date" -AsJob                    
+                        #write to TGW Logs for Opnotes
+                        $opnotes=@()
+                        $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
+                        $opnotes+= $date
+                        $opnotes+= "*************************************"
+                        $opnotes+= "Action: Modified Audit Policy"
+                        $opnotes+= "Target:$ip"
+                        $opnotes+= "Commands Executed:"
+                        $opnotes+= $actioncode.tostring().split(';')
+                        $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
+                    }
+                }                    
+
+                if ($choice -eq "1" -or $choice -eq "2"){
+                    #Create Scriptblock to baseline the current auditpolicy
+                    $action={function Build-PolicyObject{
+                    $auditpol_categories= $(C:\windows\system32\auditpol.exe /get /category:* | select-string -Pattern ^[A-Z])
+                    $auditpol_categories= $auditpol_categories[2..$($auditpol_categories.count)]
+                    $policy_obj=@("Category,Subcategory, Policy")
+                                               
+                    foreach ($c in $auditpol_categories){
+                        $subcategories= C:\windows\system32\auditpol.exe /get /category:$c | select-string -Pattern ^" "
+                        foreach ($s in $subcategories){
+                            $s= $s.tostring()-split('  ') | % {$_.trimstart().trimend()}
+                            $policy_obj+= "$($c.tostring()),$($s[1]),$($s[$($s.count -1)])"
+                            }
+                        }
+                    $policy_obj
+                    }
+                    Build-PolicyObject
+                    }
+                    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                    $actioncode= [scriptblock]::Create($action)
+                    
+                    foreach ($ip in $listofips){
+                        $backupfile= "$env:userprofile\desktop\TheGreaterWall\TgwLogs\AuditPol_backup\" + "$ip" + "_auditpolicy_backup.csv"
+                        if (!$(get-item -Path $backupfile -ErrorAction SilentlyContinue)){
+                            invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-baseline-Auditpolicy-$date" -AsJob
+                        }
+                    }
+    
+                    #create Scriptblock to Change Audit policy
+                    $action=@()
+                    $action+= $logs.command-join(';')
+                    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+                    $actioncode = [scriptblock]::Create($action)
+    
+                    foreach ($ip in $listofips){                  
+                        
+                        invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-Auditpolicy-$date" -AsJob
+                       
+                        #write to TGW Logs for Opnotes
+                        $opnotes=@()
+                        $date= "[ " + $((Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "") + " ]"
+                        $opnotes+= $date
+                        $opnotes+= "*************************************"
+                        $opnotes+= "Action: Modified Audit Policy"
+                        $opnotes+= "Target:$ip"
+                        $opnotes+= "Commands Executed:"
+                        $opnotes+= $action.split(';')
+                        $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
+                    }
+                    clear-host
+                    header
+                    Write-Output " "
+                    Write-Output "You've changed the audit policy on $($listofips.count) Target(s)."
+                    write-output "In order for The Greater Wall to process the request, it must exit."
+                    Write-Output "Please type TGW to get back info the framework after pressing enter."
+                    write-output " "
+                    remove-variable -name action -Scope global -Force -ErrorAction SilentlyContinue
+                    pause
+                    break                            
+                }  
+            }
+
             if ($action -eq "Restore-Auditpolicy"){
-                foreach ($ip in $listofips){
+                foreach ($ip in $listofips){                   
                     $original_Policy= "$env:userprofile\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\" + "$ip" + "_auditpolicy_backup.csv"
-                    $original_Policy= Get-Content $original_Policy | convertfrom-csv
-                    $original_Policy | Add-Member -NotePropertyName "Command" -NotePropertyValue "$null"
+                    $original_Policy= Get-Content $original_Policy -ErrorAction SilentlyContinue | convertfrom-csv -ErrorAction SilentlyContinue
+                    $original_appsvclog= "$env:userprofile\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\" + "$ip" + "_Apps_Svc_Logs_backup.csv "
+                    $original_appsvclog= Get-Content $original_appsvclog -ErrorAction SilentlyContinue | ConvertFrom-Csv -ErrorAction SilentlyContinue
 
-                    foreach ($o in $original_Policy){
-                        if ($o.policy -eq "Success"){
-                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Enable /failure:Disable"
-                        }
+                    if ($original_Policy){
+                        $original_Policy | Add-Member -NotePropertyName "Command" -NotePropertyValue "$null"
 
-                        if ($o.policy -eq "Failure"){
-                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Disable /failure:Enable"
-                        }
+                        foreach ($o in $original_Policy){
+                            if ($o.policy -eq "Success"){
+                                $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Enable /failure:Disable"
+                            }
+    
+                            if ($o.policy -eq "Failure"){
+                                $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Disable /failure:Enable"
+                            }
+    
+                            if ($o.policy -eq "Success and Failure"){
+                                $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Enable /failure:Enable"
+                            }
+    
+                            if ($o.policy -eq "No Auditing"){
+                                $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Disable /failure:Disable"
+                            }
+                        }  
+                    }
 
-                        if ($o.policy -eq "Success and Failure"){
-                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Enable /failure:Enable"
+                    if ($original_appsvclog){
+                        $original_appsvclog | Add-Member -NotePropertyName "Command" -NotePropertyValue "$null"
+                       
+                        foreach ($o in $original_appsvclog){
+                            $command= '$log= ' + "New-Object System.Diagnostics.Eventing.Reader.EventLogConfiguration " + '"' + $($o.logname) + '"' + ";" + '$log' + '.IsEnabled=' + '$' + "$($o.setting)" + ';try{$log.SaveChanges()}catch{}'
+                            $o.command = $command
                         }
+                    }
 
-                        if ($o.policy -eq "No Auditing"){
-                            $o.command = "C:\windows\system32\auditpol.exe /set /subcategory:" + '"'+ $($o.subcategory) + '" ' + "/Success:Disable /failure:Disable"
-                        }
-                    }  
 
                     #prepare to restore the Audit policy
                     $action=@()
                     $action+= $original_Policy.command-join(';')
+                    $action+= $original_appsvclog.command-join(';')
                     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
                     $actioncode = [scriptblock]::Create($action)
 
-                    clear-host
+                    #clear-host
                     header
                     write-output "You are about to restore the audit policies on $($listofips.count) target(s) back to their default."
                     write-output " "
-                    pause
-    
                     invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Restore-Auditpolicy-$date" -AsJob                              
                    
                     #write to TGW Logs for Opnotes
@@ -3519,7 +3621,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
                 }             
               
-                Clear-host
+                clear-host
                 header
                 Write-Output " "
                 Write-Output "You've changed the audit policy on $($listofips.count) Target(s)."
@@ -3559,7 +3661,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 if ($a -like "*activedirectory*"){
                     
                     if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
-                        Clear-Host
+                        clear-host
                         header
                         write-output "Active Directory settings aren't configured."
                         Write-Output 'You must configure it.'
@@ -3659,7 +3761,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     if ($action -like "*activedirectory*"){
                         
                         if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
-                            Clear-Host
+                            clear-host
                             header
                             write-output "Active Directory settings aren't configured."
                             Write-Output 'You must configure it.'
@@ -3710,7 +3812,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }           
             clear-host
             write-output "All done."
-            remove-variable -name action -force
+            remove-variable -name action -Scope global -force -ErrorAction SilentlyContinue
         }    
     }
 
