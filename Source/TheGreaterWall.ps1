@@ -3430,6 +3430,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                     
                     $logs= $all_application_and_services_logs.description | Out-GridView -PassThru -Title "Choose one or More Applications and Services Log"
                     $commands= @()
+                    $commands+= 'Start-sleep -seconds 60'
 
                     foreach ($l in $logs){
                         $commands+= $($($all_application_and_services_logs | where {$_.description -eq "$l"}).command)
