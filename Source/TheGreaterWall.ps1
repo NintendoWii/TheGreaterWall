@@ -1531,7 +1531,7 @@ function tgw ($rawcommand){
         
         #Extract the CSV potion of the PowerShell logs and write them to a csv file each endpoints post processing folder prior to building the master reference        
         
-        if ($(Get-ChildItem C:\Users\user1\desktop\TheGreaterWall\Results -Force -Recurse | where {$_.Parent -notlike "*postprocess*" -and $_.name -notlike "*postprocess*"} | where {$_.name -like "*powershell*"})){
+        if ($(Get-ChildItem $env:userprofile\desktop\TheGreaterWall\Results -Force -Recurse | where {$_.Parent -notlike "*postprocess*" -and $_.name -notlike "*postprocess*"} | where {$_.name -like "*powershell*"})){
              ExtractCSVFrom-PowerShellLogs
             ###################################
             #Build PowerShell Master Reference#
