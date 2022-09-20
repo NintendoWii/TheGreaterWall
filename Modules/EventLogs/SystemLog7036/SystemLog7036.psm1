@@ -3,6 +3,7 @@ function SystemLog7036{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+	    OperatingSystem= $null
             DateCollected= $null
             Source= "SystemLog7036"
             InstaceId= $null
@@ -19,6 +20,7 @@ function SystemLog7036{
 
     $EventId7036 = Get-EventLog -LogName System | Where-Object {$_.EventID -eq "7036"}
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     foreach ($i in $EventId7036){
@@ -32,6 +34,7 @@ function SystemLog7036{
         $State = $i.ReplacementStrings[1]
 
         $results.Hostname= $hostname
+	$results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.InstaceId= $InstanceId
         $results.Index= $Index
