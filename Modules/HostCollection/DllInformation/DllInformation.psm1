@@ -3,6 +3,7 @@ function DllInformation{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "DllInformation"
             ProcessName= $null
@@ -17,6 +18,7 @@ function DllInformation{
     $output= @()
 
     $hostname= $env:COMPUTERNAME 
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $modules= (get-process).modules.filename | sort -Unique
     $processes= get-process
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
@@ -52,6 +54,7 @@ function DllInformation{
                 }
 
                 $results.Hostname= $hostname
+                $results.operatingsystem= $operatingsystem
                 $results.DateCollected= $date
                 $results.ProcessName= $name
                 $results.Processpath= $path
