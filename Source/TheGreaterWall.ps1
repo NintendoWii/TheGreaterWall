@@ -142,7 +142,8 @@ function tgw ($rawcommand){
 
                 if ($choice -eq "1"){
                     new-variable -name DCcreds -Value $(get-credential) -Scope global -force -ErrorAction SilentlyContinue
-                    $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
+                    $option = New-PSSessionOption -nomachineprofile
+                    $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds -SessionOption $option
     
                     if (!$dcsesh){
                         clear-host
@@ -1393,13 +1394,15 @@ function tgw ($rawcommand){
                     }
                     $finalout+= $sketch
                 }
-                
-                $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged -ErrorAction SilentlyContinue
-             
+
+                if ($finalout){
+                    $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged -ErrorAction SilentlyContinue
+                }
+
                 new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
                 $finalout= $finalout | ConvertTo-Csv -NoTypeInformation -ErrorAction SilentlyContinue
 
-                if ($finalout){
+                if ($finalout.count -gt 1){
                     $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
                 }
                 $end= Get-Date               
@@ -1477,6 +1480,43 @@ function tgw ($rawcommand){
                     $sketch= @()
                     $finalout= @()
                     #find only lone occurences
+
+                     ########OS GROUPS############
+                    $operatingsystemgroups= $refinedoutput | group-object -Property operatingsystem
+                    if ($operatingsystemgroups.count -gt 1){
+                        
+                        foreach ($o in $operatingsystemgroups){
+                            $sketch= @()
+                            $finalout= @()
+                            $refinedoutputOS= $o.group
+                            
+                            foreach ($sortproperty in $sortproperties){
+                                
+                                foreach ($i in $($($refinedoutputOS | Group-Object -Property $sortproperty | where {$_.count -le $numberofendpoints }).group)){
+                                    $i= $($i | convertto-csv)-replace('"','')
+                                    $i= $i[-1]
+                                    $sketch+= "$i,$sortproperty"
+                                }
+                                    
+                                #find occurences where it shows up more than once on a single endpoint    
+                                foreach ($i in $($refinedoutputOS | Group-Object -Property $sortproperty | where {$($_.group.$ipproperty | sort -unique).count -le $numberofendpoints}).group){
+                                    $i= $($i | convertto-csv)-replace('"','')
+                                    $i= $i[-1]
+                                    $sketch+= "$i,$sortproperty"   
+                                }
+                            }
+                                                
+                            $finalout+= $csvheader
+                            $finalout+= $sketch | sort -Unique
+                                                    
+                            if ($finalout.count -gt 1){
+                                new-item -path $postprocessingpath\AnalysisResults\OutlyerAnalysis\ -name OS_Specific_Outlyers -ItemType directory -ErrorAction SilentlyContinue
+                                new-item -path $postprocessingpath\AnalysisResults\OutlyerAnalysis\OS_Specific_Outlyers -name $($o.name) -ItemType directory -ErrorAction SilentlyContinue
+                                $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\OS_Specific_Outlyers\$($o.name)\$inputdata-Analysis.csv
+                            }
+                        }
+                    }
+                    ##########END OS GROUPS########### 
                         
                     foreach ($sortproperty in $sortproperties){
                         
@@ -1498,7 +1538,7 @@ function tgw ($rawcommand){
                     $finalout+= $sketch | sort -Unique
                                                 
                     if ($finalout.count -gt 1){     
-                    $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\$inputdata-Analysis.csv
+                        $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\$inputdata-Analysis.csv
                     }
                 }
             }  
@@ -3563,7 +3603,8 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                         $actioncode = [scriptblock]::Create($actioncode)
                         Remove-Module -name $modulename
                         
-                        $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
+                        $option = New-PSSessionOption -nomachineprofile
+                        $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds -SessionOption $option
                         Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh 
                     } 
                 }
@@ -3661,8 +3702,9 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
                             $actioncode = [scriptblock]::Create($actioncode)
                             Remove-Module -name $modulename
-                        
-                            $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds
+
+                            $option = New-PSSessionOption -nomachineprofile
+                            $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds -SessionOption $option
                             Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh  
                         }                  
                     }
