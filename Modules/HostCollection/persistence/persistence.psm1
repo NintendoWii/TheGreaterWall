@@ -3,6 +3,7 @@ Function Persistence{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "Persistence"
             Regpath= $null
@@ -39,6 +40,7 @@ Function Persistence{
     $Folder_Startup = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp" -Force
     
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $regkeys= @()
@@ -97,6 +99,7 @@ Function Persistence{
                 $value= $v
                 $regpath= $path.tostring().split('::')[-1]
                 $results.Hostname= $hostname
+                $results.operatingsystem= $operatingsystem
                 $results.DateCollected= $date
                 $results.Regpath= $regpath
                 $results.Key= $name
