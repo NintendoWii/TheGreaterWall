@@ -3,6 +3,7 @@ Function SecurityLog1102{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "SecurityLog1102"
             InstanceId= $null
@@ -20,6 +21,7 @@ Function SecurityLog1102{
 
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
     $hostname= $env:computername
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
 
     foreach($i in $EventId1102){
         $results= build-class
@@ -30,6 +32,7 @@ Function SecurityLog1102{
         $AccountResponsible=$i.ReplacementStrings[1]
 
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.InstanceId= $InstanceId
         $results.Index= $Index
