@@ -11,6 +11,7 @@ function AppCompatCache{
             Path= $null
             RelativeEvent= $null
             RelativeName= $null
+            Shortpath= $null
 
         }
         return $outputclass
@@ -266,6 +267,7 @@ function AppCompatCache{
         $relativedate= $($a.lastmodifiedtime).split('T')[0]
         $relativename= $a.path.split('\')[-1]
         $relative_event= "$relativename-$relativedate"
+        $shortpath= $a.path.split('\')[0..2]-join'\'
 
         $results.hostname= $hostname
         $results.operatingsystem= $operatingsystem   
@@ -275,6 +277,7 @@ function AppCompatCache{
         $results.path= $a.path
         $results.RelativeEvent= $relative_event
         $results.relativename= $relativename
+        $results.shortpath= $shortpath
         $x++
 
         $output+= $results | ConvertTo-Json
