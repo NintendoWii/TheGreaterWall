@@ -3,6 +3,7 @@ function Hotfixes{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "Hotfixes"
             ID= $null
@@ -14,6 +15,7 @@ function Hotfixes{
     $output= @()
 
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $hotfix= Get-HotFix
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
@@ -23,6 +25,7 @@ function Hotfixes{
 
         $results= build-class
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.ID= $id
         $results.InstallDate= $installdate
