@@ -1394,15 +1394,13 @@ function tgw ($rawcommand){
                     }
                     $finalout+= $sketch
                 }
-
-                if ($finalout){
-                    $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged -ErrorAction SilentlyContinue
-                }
-
-                new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
-                $finalout= $finalout | ConvertTo-Csv -NoTypeInformation -ErrorAction SilentlyContinue
-
+                
+                
                 if ($finalout.count -gt 1){
+                    $finalout= $finalout | convertfrom-json | select * | sort -Unique -Property samaccountname,valueflagged -ErrorAction SilentlyContinue                                    
+                    new-item -ItemType Directory -name OutlyerAnalysis -Path $postprocessingpath\AnalysisResults -ErrorAction SilentlyContinue
+                    $finalout= $finalout | ConvertTo-Csv -NoTypeInformation -ErrorAction SilentlyContinue
+
                     $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\ActiveDirectoryEnumeration-Analysis.csv
                 }
                 $end= Get-Date               
@@ -1517,7 +1515,9 @@ function tgw ($rawcommand){
                         }
                     }
                     ##########END OS GROUPS########### 
-                        
+                    
+                    $sketch= @()
+                    $finalout= @()
                     foreach ($sortproperty in $sortproperties){
                         
                         foreach ($i in $($($refinedoutput | Group-Object -Property $sortproperty | where {$_.count -le $numberofendpoints }).group)){
@@ -1537,7 +1537,7 @@ function tgw ($rawcommand){
                     $finalout+= $csvheader
                     $finalout+= $sketch | sort -Unique
                                                 
-                    if ($finalout.count -gt 1){     
+                    if ($finalout.count -gt 1){  
                         $finalout > $postprocessingpath\AnalysisResults\OutlyerAnalysis\$inputdata-Analysis.csv
                     }
                 }
