@@ -3,6 +3,7 @@ function CrashedApplications{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "CrashedApplications"
             Timegenerated= $null
@@ -16,6 +17,7 @@ function CrashedApplications{
     $output= @()
 
     $Hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $Faults = Get-EventLog -LogName Application -InstanceId 1000
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
@@ -31,6 +33,7 @@ function CrashedApplications{
             $parentchild= "$application" + "-" + "$module"
 
             $results.Hostname= $Hostname
+            $results.operatingsystem= $operatingsystem
             $results.DateCollected= $date
             $results.Timegenerated= $timestamp
             $results.FaultingApplication= $application
