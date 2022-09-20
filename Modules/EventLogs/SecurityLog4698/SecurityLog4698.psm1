@@ -3,6 +3,7 @@ function SecurityLog4698{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "SecurityLog4698"
             InstaceId= $null
@@ -20,6 +21,7 @@ function SecurityLog4698{
 
     $EventId4698 = Get-EventLog -LogName Security | Where-Object {$_.EventID -eq "4698"}
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     foreach ($i in $EventId4698){
@@ -37,6 +39,7 @@ function SecurityLog4698{
         $Content | foreach {$jhash = $jhash + $_}
 
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.InstaceId= $InstanceId
         $results.Index= $Index
