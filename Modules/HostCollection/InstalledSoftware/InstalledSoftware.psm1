@@ -3,6 +3,7 @@ function InstalledSoftware{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= InstalledSoftware
             Name= $null
@@ -16,6 +17,7 @@ function InstalledSoftware{
     $output= @()
 
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $product= Get-WmiObject win32_product
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
     foreach ($p in $product){
@@ -38,6 +40,7 @@ function InstalledSoftware{
             $date= "NULL"
         }
         $results.hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.name= $name
         $results.Version= $version
