@@ -3,6 +3,7 @@ function TasksScheduled{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+	    OperatingSystem= $null
             DateCollected= $null
             Source= "TasksScheduled"
             TaskName= $null
@@ -17,6 +18,7 @@ function TasksScheduled{
     $output= @()
 
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $tasks = Get-ScheduledTask
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join "" 
 
@@ -55,6 +57,7 @@ function TasksScheduled{
         }
 
         $results.Hostname= $hostname
+	$results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.TaskName= $task
         $results.TaskState= $state
