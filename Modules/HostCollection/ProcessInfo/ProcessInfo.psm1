@@ -3,6 +3,7 @@ Function ProcessInfo{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "ProcessInfo"
             ProcessName= $null
@@ -31,6 +32,7 @@ Function ProcessInfo{
     $output= @()
 
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $ErrorActionPreference="silentlycontinue"
     $ProcessList = Get-WmiObject -Class Win32_Process
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
@@ -123,6 +125,7 @@ Function ProcessInfo{
 
 
     $results.hostname= $hostname
+    $results.operatingsystem= $operatingsystem
     $results.datecollected= $date
     $results.processname= $($process.name)
     $results.ProcessID= $($process.processid)
