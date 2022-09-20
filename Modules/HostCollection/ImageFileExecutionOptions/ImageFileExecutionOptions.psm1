@@ -3,6 +3,7 @@ Function ImageFileExecutionOptions{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+	    OperatingSystem= $null
             DateCollected= $null
             Source= "ImageFileExecuionOptions"
             Regpath= $null
@@ -16,6 +17,7 @@ Function ImageFileExecutionOptions{
     $output= @()
         
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $HKLM_FileExec = Get-ItemProperty -Path "HKLM:\\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -ErrorAction SilentlyContinue
     $HKLM_SilentProcessExit = Get-ItemProperty -Path "HKLM:\\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\*" -ErrorAction SilentlyContinue
     $regkeys= @()
@@ -41,6 +43,7 @@ Function ImageFileExecutionOptions{
 		            $keyval= "$prop" + "-" + "$propertyvalue"
 
                     $results.Hostname= $hostname
+		    $results.operatingsystem= $operatingsystem
                     $results.DateCollected= $date
                     $results.Regpath= $p
                     $results.key= $prop
