@@ -3,6 +3,7 @@ function ServiceInfo{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "ServiceInfo"
             State= $null
@@ -21,6 +22,7 @@ function ServiceInfo{
     $output= @()
 
     $Hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $processes= Get-WmiObject win32_process
     $services= Get-WmiObject win32_Service
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
@@ -29,6 +31,7 @@ function ServiceInfo{
     foreach ($s in $services){
         $results= build-class
         $results.hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.state= $s.state
         $results.startmode= $s.startmode
