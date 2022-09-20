@@ -3,6 +3,7 @@ function smb{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+	    OperatingSystem= $null
             DateCollected= $null
             Source= "SMB"
             SMBv1= $null
@@ -15,11 +16,13 @@ function smb{
     $results= build-class
 
     $hostname= $env:COMPUTERNAME
-	$SMBVersion1 = (Get-SmbServerConfiguration).EnableSMB1Protocol
-	$SMBVersion2= (Get-SmbServerConfiguration).EnableSMB2Protocol
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $SMBVersion1 = (Get-SmbServerConfiguration).EnableSMB1Protocol
+    $SMBVersion2= (Get-SmbServerConfiguration).EnableSMB2Protocol
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 	
     $results.Hostname= $hostname
+    $results.operatingsystem= $operatingsystem
     $results.DateCollected= $date
     $results.SMBv1= $SMBVersion1
     $results.SMBv2= $SMBVersion2
