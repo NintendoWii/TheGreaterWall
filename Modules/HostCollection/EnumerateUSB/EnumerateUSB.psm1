@@ -4,6 +4,7 @@ function EnumerateUSB{
                 $outputclass= [pscustomobject][ordered]@{
                 IP= "null"
                 Hostname= $null
+                OperatingSystem= $null
                 DateCollected= $null
                 Source= "EnumerateUSB"
                 Path= $null
@@ -17,6 +18,7 @@ function EnumerateUSB{
     
         $regobj= @()
         $hostname= $env:computername
+        $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
         $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
         $usb= (Get-childitem -Path "HKLM:\SYSTEM\CurrentControlSet\Enum\USB\*").Name.Replace("HKEY_LOCAL_MACHINE","HKLM:")
@@ -57,6 +59,7 @@ function EnumerateUSB{
                         $mfg= "NULL"
                     }
                     $results.hostname= $hostname
+                    $results.operatingsystem= $operatingsystem
                     $results.DateCollected= $date
                     $results.path= $path
                     $results.Driver= $driver
