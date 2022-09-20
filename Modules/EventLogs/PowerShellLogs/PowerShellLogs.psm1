@@ -3,6 +3,7 @@ function PowershellLogs{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "PowerShellLogs"
             ID= "4104"
@@ -21,6 +22,7 @@ function PowershellLogs{
     $PowershellLogs= $(Get-WinEvent -LogName "Microsoft-Windows-PowerShell/Operational" | where {$_.id -eq 4104})
 
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $datecollected= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $x= 0
@@ -50,6 +52,7 @@ function PowershellLogs{
         $timecreated= $i.timecreated.tostring()
         
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $datecollected
         $results.id= "4104"
         $results.RecordID= $recordid
