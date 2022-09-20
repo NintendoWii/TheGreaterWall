@@ -3,6 +3,7 @@ Function SecurityLog4756{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "SecurityLog4756"
             InstanceID= $null
@@ -20,6 +21,7 @@ Function SecurityLog4756{
 
     $EventID_4756 = Get-EventLog -LogName Security | Where-Object -FilterScript {$_.EventID -eq "4756"}
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     Foreach($i in $EventID_4756){
@@ -36,6 +38,7 @@ Function SecurityLog4756{
         $message= "A member was added to a security-enabled Universal group."
 
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.instanceID= $instanceID
         $results.Index= $index
