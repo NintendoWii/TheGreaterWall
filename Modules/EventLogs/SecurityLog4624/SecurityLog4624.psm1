@@ -3,6 +3,7 @@ function securityLog4624{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "SecurityLog4624"
             InstanceId= $null
@@ -25,6 +26,7 @@ function securityLog4624{
     $EventID_4624 = Get-EventLog -LogName Security | Where-Object -FilterScript {$_.EventID -eq "4624"}
     
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     Foreach($i in $EventID_4624){
@@ -43,6 +45,7 @@ function securityLog4624{
         $SourcePort = $i.ReplacementStrings[19]
 
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.InstanceId= $InstanceId
         $results.Index= $Index
