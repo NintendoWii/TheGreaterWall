@@ -3,6 +3,7 @@ Function SecurityLog4732{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Source= "SecurityLog4732"
             InstanceID= $null
@@ -20,6 +21,7 @@ Function SecurityLog4732{
     
     $EventID_4732 = Get-EventLog -LogName Security | Where-Object -FilterScript {$_.EventID -eq "4732"}
     $hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     Foreach($i in $EventID_4732){
@@ -34,6 +36,7 @@ Function SecurityLog4732{
         $message= "A member was added to a security-enabled local group."
 
         $results.Hostname= $hostname
+        $results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
         $results.InstanceID= $instanceid
         $results.Index= $index
