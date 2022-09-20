@@ -23,6 +23,8 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
 ### New Features
+* New Module! AppCompatCache
+* New feature! Ability to categorize results by operating system when analyzing outliers
 * Automatically records Op Notes
 * Modify and Restore AuditPolicy to enable event log generation on remote devices
 
