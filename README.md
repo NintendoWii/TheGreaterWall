@@ -22,13 +22,10 @@ At the end of the setup, an administrative PowerShell ISE window will open.
 The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
+### New Features 10-20-2022
+* New Module! EnumerateEventLogs - Gathers a list of every event log being logged on a system. Quickly determine whether the auditpolicy is set to log what you think it's logging.
 ### New Features 9-20-2022
 * New Module! AppCompatCache
 * New feature! Ability to categorize results by operating system prior to analyzing outliers
 
-
-### Coming soon
-* MITRE ATT&CK crosswalk
-* HTML Report Generation
-* More modules
 
