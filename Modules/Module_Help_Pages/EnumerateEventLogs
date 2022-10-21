@@ -13,21 +13,21 @@ Output format:
 	CSV
 
 Sample output:
-IP            : null
-Hostname      : RD244-0208
-DateCollected : 21-Oct-2022 1022
-Logname       : Security
-ID            : 4688
-Firstcreated  : 21-Oct-2022-10:24:27
-Lastcreated   : 20-Oct-2022-9:14:2
-RecordCount   : 6660
-UID           : 8564688
+  IP            : null
+  Hostname      : RD244-0208
+  DateCollected : 21-Oct-2022 1022
+  Logname       : Security
+  ID            : 4688
+  Firstcreated  : 21-Oct-2022-10:24:27
+  Lastcreated   : 20-Oct-2022-9:14:2
+  RecordCount   : 6660
+  UID           : 8564688
 
 Fields:
-	IP- Ip of the endpoint this module was run on (This filed will read "NULL" until it is post processed)
-	Hostname- Hostname of the endpoint this module was run on
-	DateCollected- Timestamp of when this module was run on the endpoint
-	Logname- The name of the event log thats been enumerated
+  IP- Ip of the endpoint this module was run on (This filed will read "NULL" until it is post processed)
+  Hostname- Hostname of the endpoint this module was run on
+  DateCollected- Timestamp of when this module was run on the endpoint
+  Logname- The name of the event log thats been enumerated
   ID- The windows event ID for the log
   Firstcreated- Timestamp of the oldest log in the collection
   Lastcreated- Timestamp of the youngest log in the collection
