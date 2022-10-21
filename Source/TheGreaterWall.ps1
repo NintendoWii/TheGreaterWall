@@ -193,6 +193,39 @@ function tgw ($rawcommand){
             }
         }
     }
+    #determines where to store the results
+    function promptfor-Loglocal{
+        clear-host
+        header
+        write-output "Please choose the location where you'd like the results to be stored."
+        write-output " "
+        Write-Output "1.) Locally on this computer (Pros: Able to post-process data | Cons: Might not scale well if querying over ~150 remote endpoints)"
+        Write-Output "2.) Log the results as an event log on each remote endpoint. (Pros: quickly forward those events to a SIEM | Cons: Post-processing will not be available)"
+        write-output "3.) Both."
+        Write-Output " "
+        $choice= Read-Host -prompt " "
+        
+        if ($choice -ne 1 -and $choice -ne 2 -and $choice -ne 3){
+            clear-host
+            write-output "Invalid selection"
+            sleep 1
+            clear-host
+            promptfor-loglocal
+        }
+
+        if ($choice -eq 1){
+            new-variable -name loglocal -value 1 -Scope global -Force -ErrorAction SilentlyContinue
+        }
+
+        if ($choice -eq 2){
+            new-variable -name loglocal -value 2 -Scope global -Force -ErrorAction SilentlyContinue
+        }
+
+        if ($choice -eq 3){
+            new-variable -name loglocal -value 3 -Scope global -Force -ErrorAction SilentlyContinue
+        }
+
+    }
 
     #sets up Splunk 
     function PromptFor-Splunk{
@@ -1790,48 +1823,82 @@ function tgw ($rawcommand){
         }
     }
 
+    function save-config{
+        $globalvars= @()
+        $globalvars+= 'Name,Value'
+        $globalvars+=  'playbook,null'
+        $globalvars+=  'action,null'
+        $globalvars+=  'activedirectoryconfiguration,null'
+        $globalvars+=  'completedconnectiontest,null'
+        $globalvars+=  'connectionstatus,null'
+        $globalvars+=  'credentials,null'
+        $globalvars+=  'datasets,null'
+        $globalvars+=  'date,null'
+        $globalvars+=  'DCcreds,null'
+        $globalvars+=  'domaincontrollerip,null'
+        $globalvars+=  'foldernames,null'
+        $globalvars+=  'listofips,null'
+        $globalvars+=  'loadedconf,null'
+        $globalvars+=  'Logaggregatorchoice,null'
+        $globalvars+=  'loglocal,null'
+        $globalvars+=  'mode,null'
+        $globalvars+=  'modstatus,null'
+        $globalvars+=  'obj,null'
+        $globalvars+=  'playbook,null'
+        $globalvars+=  'postprocessfoldernames,null'
+        $globalvars+=  'postprocessingpath,null'
+        $globalvars+=  'resultspath,null'
+        $globalvars+=  'securityonionip,null'
+        $globalvars+=  'sensitivity,null'
+        $globalvars+=  'setupstate,null'
+        $globalvars+=  'splunkconfiguration,null'
+        $globalvars+=  'tgw_logbeatconfiguration,null'       
+
+    
+        $globalvars= $globalvars | convertfrom-csv
+
+        foreach ($g in $globalvars){
+            $value= $(Get-Variable -name $g.name -ErrorAction SilentlyContinue).value
+            $g.value= $value
+        }
+        $globalvars= $globalvars | convertto-json
+        return $globalvars
+    }
+
     #clears all global variables, and reload the framework
     function tgw-reset{
         $globalvars= @()
-        $globalvars+= "action"
-        $globalvars+= "Completedconnectiontest"
-        $globalvars+= "credential"
-        $globalvars+= "credentials"
-        $globalvars+= "datasets"
-        $globalvars+= "foldernames"
-        $globalvars+= "listofips"
-        $globalvars+= "mode"
-        $globalvars+= "postprocessfoldernames"
-        $globalvars+= "postprocessingpath"
-        $globalvars+= "resultspath"
-        $globalvars+= "setupstate"
-        $globalvars+= "status"
-        $globalvars+="action"
-        $globalvars+="activedirectoryconfiguration"
-        $globalvars+="completedconnectiontest"
-        $globalvars+="connectionstatus"
-        $globalvars+="credentials"
-        $globalvars+="datasets"
-        $globalvars+="DCcreds"
-        $globalvars+="domaincontrollerip"
-        $globalvars+="foldernames"
-        $globalvars+="listofips"
-        $globalvars+="Logaggregatorchoice"
-        $globalvars+="mode"
-        $globalvars+="modstatus"
-        $globalvars+="playbook"
-        $globalvars+="postprocessfoldernames"
-        $globalvars+="postprocessingpath"
-        $globalvars+="resultspath"
-        $globalvars+="securityonionip"
-        $globalvars+="sensitivity"
-        $globalvars+="setupstate"
-        $globalvars+="splunkconfiguration"
-        $globalvars+="tgw_logbeatconfiguration"
-        
-
+        $globalvars+= 'Name,Value'
+        $globalvars+=  'playbook,null'
+        $globalvars+=  'action,null'
+        $globalvars+=  'activedirectoryconfiguration,null'
+        $globalvars+=  'completedconnectiontest,null'
+        $globalvars+=  'connectionstatus,null'
+        $globalvars+=  'credentials,null'
+        $globalvars+=  'datasets,null'
+        $globalvars+=  'date,null'
+        $globalvars+=  'DCcreds,null'
+        $globalvars+=  'domaincontrollerip,null'
+        $globalvars+=  'foldernames,null'
+        $globalvars+=  'listofips,null'
+        $globalvars+=  'loadedconf,null'
+        $globalvars+=  'Logaggregatorchoice,null'
+        $globalvars+=  'loglocal,null'
+        $globalvars+=  'mode,null'
+        $globalvars+=  'modstatus,null'
+        $globalvars+=  'obj,null'
+        $globalvars+=  'playbook,null'
+        $globalvars+=  'postprocessfoldernames,null'
+        $globalvars+=  'postprocessingpath,null'
+        $globalvars+=  'resultspath,null'
+        $globalvars+=  'securityonionip,null'
+        $globalvars+=  'sensitivity,null'
+        $globalvars+=  'setupstate,null'
+        $globalvars+=  'splunkconfiguration,null'
+        $globalvars+=  'tgw_logbeatconfiguration,null'
+        $globalvars= $globalvars | convertfrom-csv
         foreach ($g in $globalvars){
-            Remove-Variable -name $g -Scope global -force -ErrorAction SilentlyContinue
+            Remove-Variable -name $($g.name) -Scope global -force -ErrorAction SilentlyContinue
         }
         #get-module | where {$_.name -like "*activedirectory*"} | remove-module -Force -ErrorAction SilentlyContinue
         get-module | where {$_.name -like "*reformat*"} | Remove-Module -Force -ErrorAction SilentlyContinue
@@ -1968,6 +2035,7 @@ function tgw ($rawcommand){
         write-output 'Command= "beat-sync"              Description= Creates local event logs from results and forwards them to Security Onion'
         write-output 'Command= "splunk-sync"            Description= Creates local event logs from results and forwards them to splunk'
         write-output 'Command= "reset-splunk"           Description= Re-configure the settings for splunk forwarding'
+        Write-Output 'Command= "reset-resultlocation"   Description= Reconfigure where the results from tunning the modules are output'
         write-output 'Command= "Modify-Auditpolicy"     Description= Enable or disable the logging behavior of the Target Endpoints'
         write-output 'Command= "Restore-Auditpolicy"    Description= Restore the Audit POlicy of Targets back to their default policy.'
         write-output 'Command= "back"                   Description= Go back to the main menu'
@@ -2570,7 +2638,44 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             }
         }
     }    
+    
+    function promptfor-configload{
+        $conf= Get-Item -Path $env:userprofile\Desktop\Thegreaterwall\source\tgw_config.conf -ErrorAction SilentlyContinue
+        if (!$loadedconf){
+            if ($conf){
+                clear-host
+                header
+                write-output "There's a saved configuration from $($conf.lastwritetime)"
+                Write-Output "Would you like to apply this configuration?"
+                write-output "1.) Yes"
+                Write-Output "2.) No"
+                $choice= Read-Host -Prompt " "
+        
+                if ($choice -eq 1){
+                    #apply-config   
+                    $tgwconf= Get-Content $env:userprofile\Desktop\Thegreaterwall\source\tgw_config.conf -ErrorAction SilentlyContinue | convertfrom-json
 
+                    foreach ($t in $tgwconf){
+                        new-variable -name $t.name -value $t.value -scope global -Force -ErrorAction SilentlyContinue
+                    }
+                    new-variable -name loadedconf -Value 1 -Scope global -Force -ErrorAction SilentlyContinue
+                               
+                }
+        
+                if ($choice -eq "2"){
+                    clear-host
+                }
+        
+                if ($choice -ne 1 -and $choice -ne 2){
+                    clear-host
+                    Write-Output "Invalid selection"
+                    sleep 1
+                    remove-variable -name choice -Force -ErrorAction SilentlyContinue
+                    promptfor-configload
+                }
+            }
+        }
+    }
     #syncs results to SecOnion Via WinLogBeat
     function beat-sync{
 
@@ -2754,6 +2859,18 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             $mode= "Event Log Colllection"
             New-Variable -name mode -value $mode -Force -ErrorAction SilentlyContinue -Scope global
         }
+
+        if ($loglocal -eq 2){
+            $loglocation= "TGW event log on each remote computer"
+        }
+
+        if ($loglocal -eq 1){
+            $loglocation= "On this device"
+        }
+
+        if ($loglocal -eq 3){
+            $loglocation= "On this device and on each remote computer"
+        }
     
         try{
             clear-host
@@ -2774,7 +2891,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             header
 
             write-host "Additional administrative commands are available utilizing the syntax [Admin-Commands].`n"
-            write-output "[ Mode: $mode | Credentials: $c | Targeted Endpoints: $($listofips.count) ]"
+            write-output "[ Mode: $mode | Credentials: $c | Targeted Endpoints: $($listofips.count) | Results Location: $loglocation]"
             write-output " "
             write-host "Select a module to run against targeted endpoints:`n"
             
@@ -2857,6 +2974,15 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 
     if ($rawcommand -eq "Reset"){
         tgw-reset        
+    }
+    
+    #prompt for config load
+    promptfor-configload
+        
+
+    #prompt for storage location
+    if (!$loglocal){
+        promptfor-Loglocal
     }
 
     #prompt the user for Splunk configuration params
@@ -3034,6 +3160,7 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
 
         #Prompt for action that you wish to execute
         prompt-foraction
+        save-config
 
         $poplocation= 1
 
@@ -3149,6 +3276,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
             }
 
+            if ($action -eq "reset-resultlocation"){
+                clear-host 
+                promptfor-Loglocal
+                Remove-Variable -name action -force -ErrorAction SilentlyContinue
+            }
+
             if ($action -eq "remove-target"){
                 clear-host
                 remove-target
@@ -3224,7 +3357,12 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
             if ($action -eq "admin-commands"){
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue -Scope global
                 display-admincommands
-            }       
+            }
+            
+            if ($action -eq "save-config"){
+                save-config | out-file $env:userprofile\Desktop\Thegreaterwall\source\tgw_config.conf -Force -ErrorAction SilentlyContinue
+                clear-host
+            }      
             
             if ($action -eq "Back"){
                 Remove-Variable -name poplocation -Force -ErrorAction SilentlyContinue
@@ -3715,14 +3853,37 @@ clear-variable -name choice -Force -ErrorAction SilentlyContinue
                             $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
                             $filename= "$ip-$action-$date.txt"
                             import-module $action    
-                            $actioncode= $(get-module -name $action).Definition
-                            $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
-                            $actioncode = [scriptblock]::Create($actioncode)
-                            Remove-Module -name $action
+                            $actioncode= $(get-module -name $action).Definition                                                        
+
+                            if ($loglocal -eq 2 -or $loglocal -eq 3){
+                                $logid= $(Get-Content $env:USERPROFILE\desktop\thegreaterwall\modules\modules.conf | convertfrom-csv -Delimiter ':' | where {$_.p1 -eq $action -and $_.p2 -eq "LogID"}).p3
+                                $replacementstring= '$'+'content= '+"$action`n" + "`n" + "New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue`n"+"Limit-EventLog -LogName TGW -MaximumSize 4000000KB -ErrorAction SilentlyContinue`n"+'foreach ($c in $content){'+"`n"+"`t"+'$c= $c | convertto-json' + "`n"+"`tWrite-EventLog -LogName TGW -Source TGW -EntryType Warning -EventId $logID -Message" + ' $c' +"`n"+'}'
+                                $string2replace= "Export-ModuleMember -Function $action"
+                                $actioncode= $actioncode-replace("$string2replace","$replacementstring")
+                                
+                                $string2replace= "output \| ConvertFrom-Json \| convertto-csv -NoTypeInformation"
+                                $replacementstring= "output | ConvertFrom-Json"
+                                $actioncode= $actioncode-replace("$string2replace","$replacementstring")
+
+                                if ($loglocal -eq 2){
+                                    $actioncode= "$actioncode" + 'write-output "Results are stored in the event logs on this host"'
+                                }
+
+                                if ($loglocal -eq 3){
+                                    $actioncode= "$actioncode" + '$content | ConvertTo-Csv -NoTypeInformation'
+                                }
+
+                                $actioncode = [scriptblock]::Create($actioncode)
+                            }
                             
-                            if ($listofips -eq "localhost"){
-                                #$hostname= $env:COMPUTERNAME=
-                                #invoke-command -ScriptBlock $actioncode -computername localhost -JobName "$hostname-$action-$date" -AsJob 
+                            if ($loglocal -eq 1){                            
+                                $actioncode= $actioncode-replace('Export-ModuleMember -Function ','')
+                                $actioncode = [scriptblock]::Create($actioncode)
+                                Remove-Module -name $action
+                            }
+                                
+
+                            if ($listofips -eq "localhost"){ 
                                 start-job -ScriptBlock $actioncode -name "localhost-$action-$date"
                             }
 
