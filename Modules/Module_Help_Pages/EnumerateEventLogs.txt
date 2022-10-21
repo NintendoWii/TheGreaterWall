@@ -32,4 +32,6 @@ Fields:
   Firstcreated- Timestamp of the oldest log in the collection
   Lastcreated- Timestamp of the youngest log in the collection
   RecordCount- Total number of each log ID (ex: there are 6660 Security 4688 event logs)
-  UID- Numerical identifier for each log. The first half of the UID represents the Logname and the Last half represents the event ID (ex: UID: 85644688= 8564(Security) + 4688 (Event ID)
+  UID- Numerical identifier for each log. The first half of the UID represents the Logname and the Last half represents the event ID 
+  (ex: UID: 85644688= 8564(Security) + 4688 (Event ID)
+  (ex: UID: 85644624= 8564(Security) + 4624 (Event ID)
