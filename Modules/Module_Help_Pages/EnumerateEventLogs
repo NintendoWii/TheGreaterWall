@@ -1,0 +1,35 @@
+Help page for EnumerateEventLogs
+
+What it does:
+	Summarizes the Windows event logs being generated on a system, and how many of each.
+
+CmdLets used:
+  get-date
+  get-winevent
+  get-culture
+  measure-object
+
+Output format:
+	CSV
+
+Sample output:
+IP            : null
+Hostname      : RD244-0208
+DateCollected : 21-Oct-2022 1022
+Logname       : Security
+ID            : 4688
+Firstcreated  : 21-Oct-2022-10:24:27
+Lastcreated   : 20-Oct-2022-9:14:2
+RecordCount   : 6660
+UID           : 8564688
+
+Fields:
+	IP- Ip of the endpoint this module was run on (This filed will read "NULL" until it is post processed)
+	Hostname- Hostname of the endpoint this module was run on
+	DateCollected- Timestamp of when this module was run on the endpoint
+	Logname- The name of the event log thats been enumerated
+  ID- The windows event ID for the log
+  Firstcreated- Timestamp of the oldest log in the collection
+  Lastcreated- Timestamp of the youngest log in the collection
+  RecordCount- Total number of each log ID (ex: there are 6660 Security 4688 event logs)
+  UID- Numerical identifier for each log. The first half of the UID represents the Logname and the Last half represents the event ID (ex: UID: 85644688= 8564(Security) + 4688 (Event ID)
