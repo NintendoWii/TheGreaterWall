@@ -23,8 +23,10 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
 ### New Features 10-20-2022
-* New Module! EnumerateEventLogs - Gathers a list of every event log being logged on a system. Quickly determine whether the auditpolicy is set to log what you think it's logging.
+* New feature! Results can either be pulled back to your system  (Traditional) or left on the remote endpoint, allowing for an already existing log forwarder push them to your SIEM.
 * New Feature! Load from a saved running configuration.
+* New Module! EnumerateEventLogs - Gathers a list of every event log being logged on a system. Quickly determine whether the auditpolicy is set to log what you think it's logging.
+
 ### New Features 9-20-2022
 * New Module! AppCompatCache
 * Improved ServiceInfo Module - Now includes Service Recovery Options data property
