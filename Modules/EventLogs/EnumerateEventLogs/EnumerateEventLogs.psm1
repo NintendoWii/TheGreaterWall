@@ -3,6 +3,7 @@ function EnumerateEventLogs{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Logname= $null
             ID= $null
@@ -16,6 +17,7 @@ function EnumerateEventLogs{
 
     $start= get-date
     $all_logs= $(Get-WinEvent -listlog * | where {$_.recordcount -gt 0}).logname
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
     
     $output= @()
     $x= 1
@@ -34,6 +36,7 @@ function EnumerateEventLogs{
             $results= build-class
             $results.Datecollected= $datecollected
             $results.Hostname= $env:computername
+            $results.OperatingSystem= $operatingsystem
             $results.Logname= $log
             $results.ID= $event_id
             $results.firstcreated= "$($first.day)-$((Get-Culture).DateTimeFormat.GetAbbreviatedMonthName($($first.month)))-$($first.year)-$($first.hour):" + "$($first.minute):" + "$($first.Second)"
