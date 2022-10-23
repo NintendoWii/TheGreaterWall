@@ -1506,6 +1506,7 @@ function tgw ($rawcommand){
                     
                     if ($sensitivity -eq "1"){
                         $numberofendpoints= "1"
+                        $numberofendpointsOS = "1"
                     }
                                     
                     $sketch= @()
@@ -1520,17 +1521,21 @@ function tgw ($rawcommand){
                             $sketch= @()
                             $finalout= @()
                             $refinedoutputOS= $o.group
-                            
+
+                            if (!$numberofendpointsOS){
+                                $numberofendpointsOS= [math]::floor($([int]$($refinedoutputOS.hostname | Group-Object).name.count /2))
+                            }
+
                             foreach ($sortproperty in $sortproperties){
                                 
-                                foreach ($i in $($($refinedoutputOS | Group-Object -Property $sortproperty | where {$_.count -le $numberofendpoints }).group)){
+                                foreach ($i in $($($refinedoutputOS | Group-Object -Property $sortproperty | where {$_.count -le $numberofendpointsOS }).group)){
                                     $i= $($i | convertto-csv)-replace('"','')
                                     $i= $i[-1]
                                     $sketch+= "$i,$sortproperty"
                                 }
                                     
                                 #find occurences where it shows up more than once on a single endpoint    
-                                foreach ($i in $($refinedoutputOS | Group-Object -Property $sortproperty | where {$($_.group.$ipproperty | sort -unique).count -le $numberofendpoints}).group){
+                                foreach ($i in $($refinedoutputOS | Group-Object -Property $sortproperty | where {$($_.group.$ipproperty | sort -unique).count -le $numberofendpointsOS}).group){
                                     $i= $($i | convertto-csv)-replace('"','')
                                     $i= $i[-1]
                                     $sketch+= "$i,$sortproperty"   
