@@ -13,6 +13,7 @@ function SecurityLog4688{
             ProcessName= $null
             Processid= $null
             ParentProcessName= $null
+            ParentProcessID= $null
             Commandline= $null
             ParentChildRelationship= $null
         }
@@ -37,6 +38,7 @@ function SecurityLog4688{
         $ProcessName = $i.ReplacementStrings[5]
         $processid= [uint32]$($i.ReplacementStrings[4])
         $ParentProcessName = $i.ReplacementStrings[13]
+        $parentprocessid= [uint32]($($I.ReplacementStrings[7])).tostring()
         $CommandLine = $i.ReplacementStrings[8]
         $parentchild= $processname + " - " + $ParentProcessName
         
@@ -50,6 +52,7 @@ function SecurityLog4688{
         $results.ProcessName= $ProcessName
         $results.processid= $processid
         $results.ParentProcessName= $ParentProcessName
+        $results.ParentProcessID= $parentprocessid
         $results.Commandline= $CommandLine
         $results.ParentChildRelationship= $parentchild
         $output += $results | ConvertTo-Json
