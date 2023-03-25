@@ -1,4 +1,30 @@
 function Get-UnsignedLoadedModules {
+    function Is-ModuleUnsigned($ModulePath) {
+        # Load the module file as a byte array
+        $bytes = [System.IO.File]::ReadAllBytes($ModulePath)
+    
+        # Check if the byte array contains the ASCII "MZ" signature at the beginning
+        if ([System.Text.Encoding]::ASCII.GetString($bytes[0..1]) -eq "MZ") {
+            # Get the offset of the PE header
+            $offset = [System.BitConverter]::ToInt32($bytes[60..63], 0)
+    
+            # Check if the byte array contains the ASCII "PE" signature at the PE header offset
+            if ([System.Text.Encoding]::ASCII.GetString($bytes[$offset..($offset+1)]) -eq "PE") {
+                # Get the certificate directory entry offset
+                $certOffset = [System.BitConverter]::ToInt32($bytes[($offset+120)..($offset+123)], 0)
+    
+                # Check if the certificate directory entry offset is non-zero
+                if ($certOffset -ne 0) {
+                    # The module is signed
+                    return "True"
+                }
+            }
+        }
+
+        # The module is unsigned
+        return "False"
+    }
+
     function Build-Class {
         [PSCustomObject]@{
             IP= "null"
@@ -10,6 +36,7 @@ function Get-UnsignedLoadedModules {
             ProcessID = $null
             ModuleName = $null
             FilePath = $null
+            Signed = $null
         }
     }
 
@@ -36,6 +63,7 @@ function Get-UnsignedLoadedModules {
                 $results.ProcessID = $process.Id
                 $results.ModuleName = $module.ModuleName
                 $results.FilePath = $module.FileName
+                $results.Signed = $isUnsigned
 
                 # Add the output object to the array
                 $output += $results
@@ -47,31 +75,4 @@ function Get-UnsignedLoadedModules {
     $output | ConvertTo-Json -Depth 1
 }
 
-function Is-ModuleUnsigned($ModulePath) {
-    # Load the module file as a byte array
-    $bytes = [System.IO.File]::ReadAllBytes($ModulePath)
-
-    # Check if the byte array contains the ASCII "MZ" signature at the beginning
-    if ([System.Text.Encoding]::ASCII.GetString($bytes[0..1]) -eq "MZ") {
-        # Get the offset of the PE header
-        $offset = [System.BitConverter]::ToInt32($bytes[60..63], 0)
-
-        # Check if the byte array contains the ASCII "PE" signature at the PE header offset
-        if ([System.Text.Encoding]::ASCII.GetString($bytes[$offset..($offset+1)]) -eq "PE") {
-            # Get the certificate directory entry offset
-            $certOffset = [System.BitConverter]::ToInt32($bytes[($offset+120)..($offset+123)], 0)
-
-            # Check if the certificate directory entry offset is non-zero
-            if ($certOffset -ne 0) {
-                # The module is signed
-                return $false
-            }
-        }
-    }
-
-    # The module is unsigned
-    return $true
-}
-
-#Export-ModuleMember -Function Get-UnsignedLoadedModules
-Get-Unsignedloadedmodules
+Export-ModuleMember -Function Get-UnsignedLoadedModules
