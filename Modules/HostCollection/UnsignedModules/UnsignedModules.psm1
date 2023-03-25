@@ -1,41 +1,22 @@
 function Get-UnsignedLoadedModules {
-    function Is-ModuleUnsigned($ModulePath) {
-        # Load the module file as a byte array
-        $bytes = [System.IO.File]::ReadAllBytes($ModulePath)
-    
-        # Check if the byte array contains the ASCII "MZ" signature at the beginning
-        if ([System.Text.Encoding]::ASCII.GetString($bytes[0..1]) -eq "MZ") {
-            # Get the offset of the PE header
-            $offset = [System.BitConverter]::ToInt32($bytes[60..63], 0)
-    
-            # Check if the byte array contains the ASCII "PE" signature at the PE header offset
-            if ([System.Text.Encoding]::ASCII.GetString($bytes[$offset..($offset+1)]) -eq "PE") {
-                # Get the certificate directory entry offset
-                $certOffset = [System.BitConverter]::ToInt32($bytes[($offset+120)..($offset+123)], 0)
-    
-                # Check if the certificate directory entry offset is non-zero
-                if ($certOffset -ne 0) {
-                    # The module is signed
-                    return "True"
-                }
-            }
-        }
-
-        # The module is unsigned
-        return "False"
-    }
-    
     function Build-Class {
         [PSCustomObject]@{
+            IP= "null"
+            Hostname= $null
+            OperatingSystem= $null
+            DateCollected= $null
+            Source= "ServiceInfo"
             ProcessName = $null
             ProcessID = $null
             ModuleName = $null
             FilePath = $null
-            Signed = $null
         }
     }
 
     $output = @()
+    $Hostname= $env:COMPUTERNAME
+    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     # Get all processes and their loaded modules
     $processes = Get-Process -IncludeUserName | Where-Object { $_.Modules }
@@ -47,15 +28,17 @@ function Get-UnsignedLoadedModules {
             $isUnsigned = Is-ModuleUnsigned $module.FileName
             if ($isUnsigned) {
                 # Build the output object
-                $result = Build-Class
-                $result.ProcessName = $process.ProcessName
-                $result.ProcessID = $process.Id
-                $result.ModuleName = $module.ModuleName
-                $result.FilePath = $module.FileName
-                $result.signed = $isUnsigned
+                $results = Build-Class
+                $results.hostname= $hostname
+                $results.operatingsystem= $operatingsystem
+                $results.DateCollected= $date
+                $results.ProcessName = $process.ProcessName
+                $results.ProcessID = $process.Id
+                $results.ModuleName = $module.ModuleName
+                $results.FilePath = $module.FileName
 
                 # Add the output object to the array
-                $output += $result
+                $output += $results
             }
         }
     }
@@ -64,4 +47,31 @@ function Get-UnsignedLoadedModules {
     $output | ConvertTo-Json -Depth 1
 }
 
-Export-ModuleMember -Function Get-UnsignedLoadedModules
+function Is-ModuleUnsigned($ModulePath) {
+    # Load the module file as a byte array
+    $bytes = [System.IO.File]::ReadAllBytes($ModulePath)
+
+    # Check if the byte array contains the ASCII "MZ" signature at the beginning
+    if ([System.Text.Encoding]::ASCII.GetString($bytes[0..1]) -eq "MZ") {
+        # Get the offset of the PE header
+        $offset = [System.BitConverter]::ToInt32($bytes[60..63], 0)
+
+        # Check if the byte array contains the ASCII "PE" signature at the PE header offset
+        if ([System.Text.Encoding]::ASCII.GetString($bytes[$offset..($offset+1)]) -eq "PE") {
+            # Get the certificate directory entry offset
+            $certOffset = [System.BitConverter]::ToInt32($bytes[($offset+120)..($offset+123)], 0)
+
+            # Check if the certificate directory entry offset is non-zero
+            if ($certOffset -ne 0) {
+                # The module is signed
+                return $false
+            }
+        }
+    }
+
+    # The module is unsigned
+    return $true
+}
+
+#Export-ModuleMember -Function Get-UnsignedLoadedModules
+Get-Unsignedloadedmodules
