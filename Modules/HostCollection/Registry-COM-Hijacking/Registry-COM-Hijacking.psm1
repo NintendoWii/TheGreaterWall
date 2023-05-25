@@ -15,7 +15,7 @@ function Registry-COM-Hijacking{
             AbandonedFilepath= 'Null'
             Level= "Informational"
         }
-    return $outputclass
+        return $outputclass
     }  
 
     $output= @()
