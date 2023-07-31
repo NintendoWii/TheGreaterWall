@@ -13,7 +13,8 @@ function ServiceInfo{
             processid= $null
             processname= $null
             parentprocessid= $null
-            parentprocessname= $null
+            ParentProcessname= $null
+            parentprocesspath= $null
             ServiceRecoveryOptions= $null
         }
     return $outputclass
@@ -42,6 +43,7 @@ function ServiceInfo{
         $results.processname= $processenum.name
         $results.parentprocessid= $processenum.parentprocessid
         $parentpath= $($processes | where {$_.processid -eq $($processenum.parentprocessid)}).path
+        $parentname= $($processes | where {$_.processid -eq $($processenum.parentprocessid)}).name
         $servicerecoveryoptions= & $env:windir\system32\sc qfailure $s.name  | select-string "Command_line" | % {$_.tostring()-replace('        COMMAND_LINE                 : ','')}
 
         if (!$servicerecoveryoptions){
@@ -52,9 +54,9 @@ function ServiceInfo{
             $parentpath= "NULL"
         }
 
-        $results.parentprocessname= $parentpath
+        $results.parentprocesspath= $parentpath
+        $results.parentprocessname= $parentname
         $results.servicerecoveryoptions= $servicerecoveryoptions
-
 
         $output+= $results | convertto-json
     }
