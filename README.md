@@ -24,7 +24,7 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ### Known bug 08-07-2023
 * A recent security update resulted in the winlog beat log forwarding mechanism to security onion not working properly. The fix action is known and will be implemented soon.
-* 
+
 ### New Features 10-20-2022
 * New feature! Results can either be pulled back to your system  (Traditional) or left on the remote endpoint, allowing for an already existing log forwarder push them to your SIEM.
 * New Feature! Load from a saved running configuration.
