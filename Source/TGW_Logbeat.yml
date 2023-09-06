@@ -2,8 +2,6 @@
 
 winlogbeat.event_logs:
   - name: TGW
-    level: warning
-    event_id: 101,105,103,107,100,108,113,104,1102,4657,4688,4698,4719,4724,4728,4732,4756,5156,7000,7024,7034,7036,7040,7045,4624,106,4104,112,109,110,102,114,200
     ignore_older: 72h
 processors:
   - decode_json_fields:
