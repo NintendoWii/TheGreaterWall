@@ -424,7 +424,7 @@ function tgw ($rawcommand){
                 $configfile= get-content $env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml
                 $hostentry= $($configfile | select-string "hosts: \[").tostring()
                 $oldval= $hostentry.split('[').split(']')[-2]-replace('"','')
-                new-item -itemtype Directory -path C:\Windows\Temp\ -name TGWLB -erroraction silentlycontinue
+                new-item -itemtype Directory -path $env:userprofile\Desktop\TheGreaterWall\Source\ -name TGWLB -erroraction silentlycontinue
                 $configfile-replace("$oldval","$securityonionip") >$env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml
                 $(get-content $env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml) >C:\windows\temp\TGWLB\TGW_Logbeat.yml
 
@@ -452,15 +452,15 @@ function tgw ($rawcommand){
                 }
 
                 if ($winlogbeatbinary -ne "None of these"){
-                    new-item -ItemType Directory -Path C:\Windows\Temp\ -Name TGWLB -ErrorAction SilentlyContinue
-
-                    remove-item -path C:\Windows\Temp\TGWLB\TGW_Logbeat.yml -ErrorAction SilentlyContinue
-                    remove-item -path C:\Windows\Temp\TGWLB\seconionbeat.exe -ErrorAction SilentlyContinue
-
-                    copy-item -Path $env:USERPROFILE\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml -Destination C:\Windows\temp\TGWLB\ -ErrorAction SilentlyContinue
+                    new-item -ItemType Directory -Path $env:userprofile\desktop\thegreaterwall\source\ -Name TGWLB -ErrorAction SilentlyContinue
+                    remove-item -path $env:userprofile\desktop\thegreaterwall\source\TGWLB\TGW_Logbeat.yml -ErrorAction SilentlyContinue
+                    remove-item -path $env:userprofile\desktop\thegreaterwall\source\TGWLB\seconionbeat.exe -ErrorAction SilentlyContinue
+                    copy-item -Path $env:USERPROFILE\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml -Destination $env:userprofile\desktop\thegreaterwall\source\TGWLB\ -ErrorAction SilentlyContinue
+                    
                     try{
-                        Copy-Item -path $winlogbeatbinary -Destination C:\Windows\Temp\TGWLB\seconionbeat.exe -ErrorAction SilentlyContinue
+                        Copy-Item -path $winlogbeatbinary -Destination $env:userprofile\desktop\thegreaterwall\source\TGWLB\seconionbeat.exe -ErrorAction SilentlyContinue
                     }
+                    
                     Catch{}
 
                     sleep 1
@@ -472,8 +472,6 @@ function tgw ($rawcommand){
                         Start-Sleep -s 1
                         $service.delete()
                     }
-    
-                    $workdir= $(pwd).tostring()
 
                     #Create initial Log that TGWLB will reconginize IOT begin connection attempts
                     New-EventLog -LogName TGW -Source TGW -ErrorAction SilentlyContinue
@@ -481,18 +479,20 @@ function tgw ($rawcommand){
                     Write-EventLog -LogName TGW -Source TGW -EntryType Warning -EventId 115 -Message "TGW_Logbeat_Init"
 
                     # Create the new service.
+                    $workdir = "$env:userprofile\Desktop\TheGreaterWall\Source\TGWLB"
+
                     New-Service -name tgwlb `
-                        -displayName tgwlb `
-                        -binaryPathName "`"C:\Windows\temp\TGWLB\seconionbeat.exe`" --environment=windows_service -c `"C:\Windows\temp\TGWLB\TGW_Logbeat.yml`" --path.home `"C:\Windows\temp\TGWLB`" --path.data `"$env:PROGRAMDATA\seconionbeat`" --path.logs `"$env:PROGRAMDATA\winlogbeat\logs`" -E logging.files.redirect_stderr=true"
+                    -displayName tgwlb `
+                    -binaryPathName "`"$workdir\seconionbeat.exe`" --environment=windows_service -c `"$workdir\TGW_Logbeat.yml`" --path.home `"$workdir`" --path.data `"$env:PROGRAMDATA\tgwlb`" --path.logs `"$env:PROGRAMDATA\tgwlb\logs`" -E logging.files.redirect_stderr=true"
 
                     # Attempt to set the service to delayed start using sc config.
                     Try {
                     Start-Process -FilePath sc.exe -ArgumentList 'config tgwlb start= delayed-auto'
+                    start-service -name tgwlb
                     }
 
-                    Catch { Write-Host -f red "An error occured setting the service to delayed start." }    
-            
-                    "sc start tgwlb" | cmd        
+                    Catch { Write-Host -f red "An error occured setting the service to delayed start." }  
+       
                     Start-Sleep -Seconds 2
                     clear-host
 
@@ -518,7 +518,7 @@ function tgw ($rawcommand){
                         $port= $config[1]
                         $ip= $Config[0]
                         clear-host
-                        Write-Output "Checking Network Connection to Security Onion Node specified in C:\Windows\Temp\TGW_Logbeat.yml"
+                        Write-Output "Checking Network Connection to Security Onion Node specified in TGW_Logbeat.yml"
                         Write-Output "This can anywhere from 1 to 30 Seconds...Please be patient."
                 
                         #$netconnection= Get-NetTCPConnection | where {$_.RemoteAddress -eq "$ip" -and $_.RemotePort -eq "$port"}
@@ -586,15 +586,16 @@ function tgw ($rawcommand){
     Function Uninstall-TGWLogBeat{
         clear-host
         $service = Get-WmiObject -Class Win32_Service -Filter "name='tgwlb'"
+        remove-item -path $env:userprofile\desktop\TheGreaterWall\Source\TGWLB -Force -Recurse -ErrorAction SilentlyContinue
+        remove-item $emv:programdata\tgwlb -force -Recurse -ErrorAction SilentlyContinue
 
         if ($service){
             $service.StopService()
             Start-Sleep -s 1
             $service.delete()
-            Remove-Item -Path C:\windows\temp\TGWLB -Force -Recurse -ErrorAction SilentlyContinue
             clear-host
             header
-            Write-output "TGW_Logbeat service has been stopped and deleted and the TGWLB directory has been removed from C:\windows\temp"
+            Write-output "TGW_Logbeat service has been stopped and deleted and the TGWLB directory has been removed"
             write-output " "
             pause
             clear-host
