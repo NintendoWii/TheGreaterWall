@@ -553,7 +553,7 @@ function tgw ($rawcommand){
                                         Write-Output " "
                                         Write-Output "  -TIP #1: Check Host Firewall and all network firewalls between this host and the Security Onion Node for rules that block port: ($port) traffic."
                                         write-output "  -TIP #2: If the status is [SynSent] the most common issue is that a route needs to be added on Security Onion Node that tells it how to reach this host"
-                                        write-output "  -TIP #3: Ensure that you run Sudo-so-allow pn the Security Onion node in order to allow tcp:$port traffic."
+                                        write-output "  -TIP #3: Ensure that you run Sudo-so-allow on the Security Onion node in order to allow tcp:$port traffic."
                                         Write-output "  -TIP #4: It's advised to use the standard port of 5044 in C:\windows\temp\TGW_Logbeat.yml because that's the default for Security Onion. Your's is set to $port."
                                         write-output " " 
                                         pause
