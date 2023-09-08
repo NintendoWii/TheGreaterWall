@@ -2808,6 +2808,10 @@ function tgw ($rawcommand){
             else{
                 $filename= $name+".txt"
                 $foldername= $name.split('-')[0]
+
+                if ($foldername -eq "localhost"){
+                    $foldername= "localhost-$env:COMPUTERNAME"
+                }
             }
 
             #get results of the finished jobs
