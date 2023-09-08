@@ -22,6 +22,13 @@ At the end of the setup, an administrative PowerShell ISE window will open.
 The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
+### New Features 9-8-2023
+* 2 New modules! WindowsDrivers and WindowsFirewall
+
+### Update 9/8/2023
+* Fixed minor issue with adding targets
+* When running against localhost, the newly created results folder will now have the computername present in its name so that you can distinguish between different localhosts
+  
 ### Update 9/6/2023
 * The issue with the winlog beat forwarding has been resolved.
 
