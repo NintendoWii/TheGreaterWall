@@ -426,7 +426,7 @@ function tgw ($rawcommand){
                 $oldval= $hostentry.split('[').split(']')[-2]-replace('"','')
                 new-item -itemtype Directory -path $env:userprofile\Desktop\TheGreaterWall\Source\ -name TGWLB -erroraction silentlycontinue
                 $configfile-replace("$oldval","$securityonionip") >$env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml
-                $(get-content $env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml) >C:\windows\temp\TGWLB\TGW_Logbeat.yml
+                #$(get-content $env:userprofile\Desktop\TheGreaterWall\Source\TGW_Logbeat.yml) >C:\windows\temp\TGWLB\TGW_Logbeat.yml
 
                 $winlogbeatbinary= @()
                 $winlogbeatbinary+= $(Get-ChildItem $env:userprofile\desktop\TheGreaterWall\Source\ | where {$_.extension -eq ".exe"}).fullname
@@ -513,7 +513,7 @@ function tgw ($rawcommand){
             
                     if ($tgwlb_service.status -eq "Running"){
                         #Check to make sure the network connection is good between TGW and Security Onion Node
-                        $Config= $(Get-Content C:\Windows\Temp\TGWLB\TGW_Logbeat.yml | select-string "Hosts: ").tostring().split(':')-replace('\["','')-replace('"]','')
+                        $Config= $(Get-Content $env:userprofile\desktop\thegreaterwall\source\TGWLB\TGW_Logbeat.yml | select-string "Hosts: ").tostring().split(':')-replace('\["','')-replace('"]','')
                         $Config= $($Config | % {$_.TrimStart().trimend()})[1..2]
                         $port= $config[1]
                         $ip= $Config[0]
