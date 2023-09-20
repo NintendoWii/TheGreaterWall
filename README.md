@@ -23,6 +23,9 @@ The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
 
+### Coming Soon 
+* Entirely powershell-native light weight machine learning.
+
 ### New Features 9-8-2023
 * 2 New modules! WindowsDrivers and WindowsFirewall
 
