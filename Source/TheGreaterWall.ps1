@@ -2773,6 +2773,7 @@ function tgw ($rawcommand){
             if ($name -like "*activedirectory*"){
                 $filename= $name.split('-')[0] +".txt"
                 $foldername= $name
+                $set= 1
             }
 
             if ($name -like "*-baseline-AppSvcLogs*"){
@@ -2780,6 +2781,7 @@ function tgw ($rawcommand){
                 $content= get-job -id $($Job.id) | receive-job
                 new-item -Path "$env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\" -Name Auditpol_backup -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
                 $content | Out-File -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\$($target)_Apps_Svc_Logs_backup.csv
+                $set= 1
             }
 
             if ($name -like "*baseline-AuditPolicy*"){
@@ -2787,6 +2789,7 @@ function tgw ($rawcommand){
                 $content= get-job -id $($Job.id) | receive-job
                 new-item -Path "$env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\" -Name Auditpol_backup -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
                 $content | Out-File -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\Auditpol_backup\$($target)_auditpolicy_backup.csv
+                $set= 1
             }
                 
             if ($name -like "*Auditpolicy*" -and $name -notlike "*baseline*"){
@@ -2794,7 +2797,8 @@ function tgw ($rawcommand){
                 $content= get-job -id $($Job.id) | receive-job                
                 $content= $content-replace("Target:NULL","Target: $target")
                 $content | out-file -Append -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\OpNotes.txt
-                remove-job -id $($job.id)                
+                remove-job -id $($job.id)  
+                $set= 1              
             }
 
             if ($name -like "*AppSvcLogs*" -and $name -notlike "*baseline*"){
@@ -2803,9 +2807,10 @@ function tgw ($rawcommand){
                 $content= $content-replace("Target:NULL","Target: $target")
                 $content | out-file -Append -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\TgwLogs\OpNotes.txt
                 remove-job -id $($job.id)                
+                $set= 1
             }
 
-            else{
+            if ($set -ne 1){
                 $filename= $name+".txt"
                 $foldername= $name.split('-')[0]
 
@@ -2817,12 +2822,12 @@ function tgw ($rawcommand){
             #get results of the finished jobs
             $results= get-job | where {$_.name -eq $name} | Receive-Job -ErrorAction SilentlyContinue                         
             
-            if ($results){               
-             $results | out-file -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\results\$foldername\$filename
+            if ($results){
+                $results | out-file -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\results\$foldername\$filename                
             }
 
             #remove the empty job
-            get-job | where {$_.name -eq $name} | remove-job
+            #get-job | where {$_.name -eq $name} | remove-job
         }
         
         if ($errorjobs){
@@ -2848,6 +2853,7 @@ function tgw ($rawcommand){
             }
         }
     }
+
 
     #Dynamic Menu that displays a menu of available modules. This menu will grow/shrink accordingly, depending on what modules you mave in the modules folder
     function display-menu ($modulepath){
