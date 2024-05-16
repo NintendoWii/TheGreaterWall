@@ -52,8 +52,6 @@ function ActiveDirectoryEnumeration{
             $Accountnames += $i.SamAccountName  
         }   
 
-        $accountnames= $Accountnames[50..55]
-
         #Check to see if property list has been built out. If not, build it.
         $x= 0
         while (!$properties){
@@ -76,24 +74,31 @@ function ActiveDirectoryEnumeration{
             $output= $output | convertfrom-csv -Delimiter ":"
             
             foreach ($o in $output){
-                $cleanproperty= $o.property
-                $cleanproperty= $cleanproperty.tostring().trimend()
-                $cleanvalue= $o.value
-                
-                if ($cleanvalue){
-                    $cleanvalue= $cleanvalue.tostring().trimend()
-                    $cleanvalue= $cleanvalue-replace('{','<')
-                    $cleanvalue= $cleanvalue-replace('}','>')
+                try{
+                    $cleanproperty= $o.property
+                    $cleanproperty= $cleanproperty.tostring().trimend()
+                    $cleanvalue= $o.value
+                    
+                    if ($cleanvalue){
+                        $cleanvalue= $cleanvalue.tostring().trimend()
+                        $cleanvalue= $cleanvalue-replace('{','<')
+                        $cleanvalue= $cleanvalue-replace('}','>')
+                    }
+    
+                    if (!$cleanvalue){
+                        $cleanvalue= "NULL"
+                    }
                 }
 
-                if (!$cleanvalue){
-                    $cleanvalue= "NULL"
-                }
+                catch{}
 
-                #append to class
-                if ($cleanproperty -ne "Runspaceid" -and $cleanproperty -ne "ObjectGUID" -and $cleanvalue){
-                    $results.$cleanproperty = $cleanvalue                
+                try{
+                    #append to class
+                    if ($cleanproperty -ne "Runspaceid" -and $cleanproperty -ne "ObjectGUID" -and $cleanvalue){
+                        $results.$cleanproperty = $cleanvalue                
+                    }
                 }
+                catch{}
             }
             #get groups
             $Groups= (Get-ADPrincipalGroupMembership "$i").name-join(',')
