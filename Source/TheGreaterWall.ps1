@@ -3850,7 +3850,7 @@ function tgw ($rawcommand){
                             Import-ActiveDirectory
                         }
 
-                        if (!$activedirectoryconfiguration -or $activedirectoryconfiguration -eq "0"){
+                        if ($activedirectoryconfiguration -or $activedirectoryconfiguration -eq "1"){
                             $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
                             new-item -name $action-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
                             $filename= "$action-$date.txt"    
