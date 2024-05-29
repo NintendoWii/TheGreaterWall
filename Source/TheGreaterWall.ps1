@@ -2829,7 +2829,7 @@ function tgw ($rawcommand){
             }
 
             #remove the empty job
-            #get-job | where {$_.name -eq $name} | remove-job
+            get-job | where {$_.name -eq $name} | remove-job
         }
         
         if ($errorjobs){
