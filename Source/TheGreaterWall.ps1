@@ -165,6 +165,7 @@ function tgw ($rawcommand){
                             Write-output "Loading Active Directory module."
                             start-sleep -Seconds 1
                             Import-Module -PSSession $dcsesh -name activedirectory
+                            sleep 1
                             $ad= get-module | where {$_.name -like "*activedirectory*" -and $_.rootmodule -like "*activedirectory*"}
                         }
 
@@ -1210,11 +1211,12 @@ function tgw ($rawcommand){
                     
             if ($moduleconfiguration){
                 #parse File for selected data
-                $settings= $obj | where {$_.p1 -eq "ActiveDirectoryEnumeration"}
+                $settings= $moduleconfiguration | where {$_.p1 -eq "ActiveDirectoryEnumeration"}
                 $sortproperties= $($settings | where {$_.p2 -eq "Pivot"}).p3                
         
                 #get contents of file
-                $path= "$postprocessingpath\RawData\all_activedirectoryEnumeration.csv"
+                $path= $(Get-ChildItem -Recurse $postprocessingpath | where {$_.name -like "*activedirectory*" -and $_.Extension -eq '.csv'}).fullname
+                #$path= "$postprocessingpath\all_activedirectoryEnumeration.csv"
                 $output= get-content $path -ErrorAction SilentlyContinue
                                         
                 if (!$output){
@@ -2820,7 +2822,7 @@ function tgw ($rawcommand){
             }
 
             #get results of the finished jobs
-            $results= get-job | where {$_.name -eq $name} | Receive-Job -ErrorAction SilentlyContinue                         
+            $results= get-job | where {$_.name -eq $name} | Receive-Job -Keep -ErrorAction SilentlyContinue                         
             
             if ($results){
                 $results | out-file -FilePath $env:USERPROFILE\Desktop\TheGreaterWall\results\$foldername\$filename                
@@ -2853,7 +2855,6 @@ function tgw ($rawcommand){
             }
         }
     }
-
 
     #Dynamic Menu that displays a menu of available modules. This menu will grow/shrink accordingly, depending on what modules you mave in the modules folder
     function display-menu ($modulepath){
@@ -2935,7 +2936,6 @@ function tgw ($rawcommand){
             break
         }
     }
-
     #Main prompt that stores the action you wish to perform in a variable
     function prompt-foraction{
         #This function outputs GLOBAL variable named $action
@@ -3153,8 +3153,7 @@ function tgw ($rawcommand){
         set-location $env:userprofile\desktop\thegreaterwall\results
         break
     }
-
-    #Compress the results and stash them away for later use
+     #Compress the results and stash them away for later use
     if ($rawcommand -eq "archive-results"){
         clear-host
         archive-results
@@ -3389,8 +3388,6 @@ function tgw ($rawcommand){
                 Remove-Variable -name action -Force -ErrorAction SilentlyContinue
                 continue
             }
-
-
             if ($action -eq "show-connectionstatus"){
                 clear-host
                 header
@@ -3556,7 +3553,6 @@ function tgw ($rawcommand){
                             $opnotes | out-file -Append -FilePath $env:userprofile\Desktop\TheGreaterWall\TgwLogs\Opnotes.txt
                         }
                     }
-
                     #make Changes
                     foreach ($ip in $listofips){
                         invoke-command -ScriptBlock $actioncode -ComputerName $ip -Credential $credentials -JobName "$ip-Modify-AppSvcLogs-$date" -AsJob                    
@@ -3753,7 +3749,6 @@ function tgw ($rawcommand){
                         new-item -name $a-$date -Path $env:USERPROFILE\desktop\TheGreaterWall\results -ItemType Directory -ErrorAction SilentlyContinue                         
                         $filename= "$a-$date.txt"    
                         import-module $a
-                        import-module $a
                         $module= get-module -name $a
                         $modulename= $module.name
                         $actioncode= $module.Definition
@@ -3762,7 +3757,7 @@ function tgw ($rawcommand){
                         Remove-Module -name $modulename
                         
                         $option = New-PSSessionOption -nomachineprofile
-                        $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds -SessionOption $option
+                        $dcsesh= New-PSSession -name dcsesh -ComputerName $domaincontrollerip -Credential $DCcreds -SessionOption $option                        
                         Invoke-Command -ScriptBlock $actioncode -jobname "$modulename-$date" -Session $dcsesh 
                     } 
                 }
@@ -3939,4 +3934,4 @@ set-location $env:userprofile\desktop\thegreaterwall\results
 
 }
 
-tgw            
+tgw 
