@@ -22,7 +22,9 @@ At the end of the setup, an administrative PowerShell ISE window will open.
 The Greater Wall must be run in an administrative PowerShell ISE window.
 ***
 ***
-
+### 5/31/2024
+* Temporarily removed the Active Directory Enumeration Module. Making improvements on how it collects and post processes the AD data. Will upload when complete.
+  
 ### Coming Soon 
 * Entirely powershell-native light weight machine learning.
 
