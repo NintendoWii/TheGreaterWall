@@ -17,9 +17,11 @@ function CrashedApplications{
     $output= @()
 
     $Hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
-    $Faults = Get-EventLog -LogName Application -InstanceId 1000
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+    
+    $Faults = Get-EventLog -LogName Application -InstanceId 1000
 
     foreach ($f in $faults){
         $results= build-class
