@@ -24,7 +24,8 @@ function SecurityLog4657{
 
     $EventId4657 = Get-EventLog -LogName Security | Where-Object {$_.EventID -eq "4657"}
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     foreach ($i in $EventId4657){
