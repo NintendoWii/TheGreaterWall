@@ -18,11 +18,13 @@ function DllInformation{
     $output= @()
 
     $hostname= $env:COMPUTERNAME 
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
+    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
+    
     $modules= (get-process).modules.filename | sort -Unique
     $processes= get-process
-    $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-
+    
     foreach ($m in $modules){
         $results= build-class
 
