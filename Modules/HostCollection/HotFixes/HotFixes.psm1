@@ -15,10 +15,12 @@ function Hotfixes{
     $output= @()
 
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
-    $hotfix= Get-HotFix
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
-
+    
+    $hotfix= Get-HotFix
+    
     foreach ($h in $hotfix){
         $id= $h.hotfixid
         $installdate= $h.installedon
