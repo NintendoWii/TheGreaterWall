@@ -21,7 +21,8 @@ function WindowsDrivers{
     
     $output= @() 
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $WindowsDrivers = Get-WindowsDriver -Online 
