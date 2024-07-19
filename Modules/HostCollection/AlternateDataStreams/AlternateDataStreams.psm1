@@ -17,7 +17,9 @@
 
     $ErrorActionPreference="silentlycontinue"
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
+    
     $AlternateDataStreams = (Get-Childitem -Path "C:\*" -Recurse | ForEach-Object {Get-Item $_.Fullname -stream "*" | Where-Object {$_.Stream -ne ':$Data'}}).Filename
 
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
