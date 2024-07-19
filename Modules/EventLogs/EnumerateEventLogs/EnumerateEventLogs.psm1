@@ -17,7 +17,8 @@ function EnumerateEventLogs{
 
     $start= get-date
     $all_logs= $(Get-WinEvent -listlog * | where {$_.recordcount -gt 0}).logname
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     
     $output= @()
     $x= 1
