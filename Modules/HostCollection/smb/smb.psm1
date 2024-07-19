@@ -16,7 +16,9 @@ function smb{
     $results= build-class
 
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
+    
     $SMBVersion1 = (Get-SmbServerConfiguration).EnableSMB1Protocol
     $SMBVersion2= (Get-SmbServerConfiguration).EnableSMB2Protocol
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
