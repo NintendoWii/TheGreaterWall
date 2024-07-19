@@ -4,6 +4,7 @@ function Registry-COM-Hijacking{
         $outputclass= [pscustomobject][ordered]@{
             IP= 'Null'
             Hostname= $null
+            OperatingSystem= $null
             DateCollected= $null
             Path= $null
             GenericPath= $null
@@ -20,6 +21,8 @@ function Registry-COM-Hijacking{
 
     $output= @()
     $hostname= $env:COMPUTERNAME
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $hives= @()
@@ -49,6 +52,7 @@ function Registry-COM-Hijacking{
             $results= build-class
             $results.Hostname = $hostname
             $results.DateCollected = $date
+            $results.operatingsystem = $operatingsystem
             $results.Path = $h
             $results.GenericPath = $h
             $results.Key = $($h.split('\')[-1]).tostring().trimstart().trimend()
