@@ -22,7 +22,8 @@ function SystemLog7045{
 
     $EventId7045 = Get-EventLog -LogName System | Where-Object {$_.EventID -eq "7045"}
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     foreach ($i in $EventId7045){
