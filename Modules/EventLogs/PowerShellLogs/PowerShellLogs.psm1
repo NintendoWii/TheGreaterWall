@@ -22,7 +22,8 @@ function PowershellLogs{
     $PowershellLogs= $(Get-WinEvent -LogName "Microsoft-Windows-PowerShell/Operational" | where {$_.id -eq 4104})
 
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $datecollected= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $x= 0
