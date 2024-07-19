@@ -249,7 +249,6 @@ function AppCompatCache{
         $BinaryReader.Dispose()
     }
     
-    $OS = Get-CimInstance -ClassName Win32_OperatingSystem
     $key= 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\AppCompatCache'
     $name= 'appcompatcache'
     $AppCompatCacheValue= $(get-itemproperty -path $key -Name appcompatcache).$name
@@ -257,7 +256,8 @@ function AppCompatCache{
     $app= ConvertFrom-ByteArray -CacheValue $AppCompatCacheValue -OSVersion $OS.Version -OSArchitecture $OS.OSArchitecture | where {$_.lastmodifiedtime -like "20*"} | select lastmodifiedtime,path
        
     $hostname= $env:COMPUTERNAME
-    $operatingsystem= $(Get-WmiObject win32_operatingsystem).name.tostring().split('|')[0]
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $output= @()
