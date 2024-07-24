@@ -1,0 +1,45 @@
+Help page for Registry-Com-Hijacking
+##################################
+
+What it does:
+	Gathers information about COM Hijack-able registry objects.
+
+Commandlets used:
+	Get-itemproperty
+	get-ciminstance
+	Get-Childitem
+	get-item
+	get-filehash
+	Get-Date
+	
+Output Format:
+	CSV
+	
+Sample Output:
+	IP                : Null
+	Hostname          : LAPTOP-D4J1KGC0
+	OperatingSystem   : Microsoft Windows 11 Home 
+	DateCollected     : 24-Jul-2024 1321
+	Path              : HKEY_USERS\S-1-5-21-2453531915-1343202222-3702442837-1002\Software\Classes\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}
+	GenericPath       : HKEY_USERS\GENERIC_USER_PLACEHOLDER\Software\Classes\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}
+	Key               : {018D5C66-4533-4307-9B53-224DE2ED1FE6}
+	Property          : SortOrderIndex
+	Value             : 66
+	Sha256FileHash    : Null
+	IsAbandoned       : No
+	AbandonedFilepath : Null
+	Level             : Informational
+
+Fields:
+	IP- Ip of the endpoint that this module was run on (This field will read "NULL" until you run the post processor)
+	Hostname- Hostname of the machine this module was run on (This field will be present without post processing)
+	DateCollected- Timestamp that the Module was run on the endpoint
+	Path- Actual reg path
+	GenericPath- Reg path where the CLSID is replaced with generic placeholder to maintain integrity of data during grouping
+	Key- Reg key name
+	Property- Reg property name
+	Value- Reg property value
+	Sha256FileHash- if the value is a file; the hash of the file
+	IsAbandoned- Whether or not the file is abandoned
+	AbandonedFilepath- If abandoned; path
+	Level- If the value is *.sct, scrobj.dll, or not a system32 file, this will the "Warning". Otherwsie it will be "Informational"
