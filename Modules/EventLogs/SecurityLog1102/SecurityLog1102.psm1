@@ -22,7 +22,7 @@ Function SecurityLog1102{
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
     $hostname= $env:computername
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
 
     foreach($i in $EventId1102){
         $results= build-class
