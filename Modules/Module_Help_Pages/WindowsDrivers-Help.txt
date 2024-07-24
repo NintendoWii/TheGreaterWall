@@ -1,0 +1,33 @@
+Help page for WindowsDrivers
+##################################
+
+What it does:
+	Gathers information about Drivers installed on a windows system
+
+Commandlets used:
+	get-ciminstance
+	Get-Date
+	Get-WindowsDriver
+	Get-Filehash
+	
+Output Format:
+	CSV
+	
+Sample Output:
+	IP               : null
+	Hostname         : LAPTOP-D2
+	OperatingSystem  : Microsoft Windows 11 Home 
+	DateCollected    : 24-Jul-2024 1901
+	Drivers          : oem115.inf
+	OriginalFileName : C:\Windows\System32\DriverStore\FileRepository\dptf_cpu.inf_amd64_c2c5b0e17a28a48f\dptf_cpu.inf
+	Hash             : 2FC27A7D604464543A23813B59884ED1E033333B101F3B2A59EB9E00FDAE02F6
+	Inbox            : False
+	ClassName        : System
+	BootCritical     : True
+	ProviderName     : Intel
+	DateofDriver     : 4/11/2022 4:00:00 AM
+	Version          : 8.7.10802.26924
+	Source           : WindowsDrivers
+
+Fields:
+	Self-explanatory
