@@ -18,7 +18,7 @@
     $ErrorActionPreference="silentlycontinue"
     $hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     
     $AlternateDataStreams = (Get-Childitem -Path "C:\*" -Recurse | ForEach-Object {Get-Item $_.Fullname -stream "*" | Where-Object {$_.Stream -ne ':$Data'}}).Filename
 
