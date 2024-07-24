@@ -17,7 +17,7 @@ function smb{
 
     $hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     
     $SMBVersion1 = (Get-SmbServerConfiguration).EnableSMB1Protocol
     $SMBVersion2= (Get-SmbServerConfiguration).EnableSMB2Protocol
