@@ -252,12 +252,13 @@ function AppCompatCache{
     $key= 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\AppCompatCache'
     $name= 'appcompatcache'
     $AppCompatCacheValue= $(get-itemproperty -path $key -Name appcompatcache).$name
-        
+    
+    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
+    $operatingsystem= "$($os.caption) $($os.version)"    
+    
     $app= ConvertFrom-ByteArray -CacheValue $AppCompatCacheValue -OSVersion $OS.Version -OSArchitecture $OS.OSArchitecture | where {$_.lastmodifiedtime -like "20*"} | select lastmodifiedtime,path
        
     $hostname= $env:COMPUTERNAME
-    $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     $output= @()
