@@ -26,7 +26,7 @@ function SecurityLog4688{
     
     $Hostname= $env:COMPUTERNAME
     $operatingsystem= $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     foreach ($i in $EventId4688){
