@@ -24,7 +24,7 @@ function ServiceInfo{
 
     $Hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     $processes= Get-WmiObject win32_process
     $services= Get-WmiObject win32_Service
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
