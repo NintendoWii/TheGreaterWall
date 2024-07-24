@@ -22,7 +22,7 @@ Function SecurityLog4732{
     $EventID_4732 = Get-EventLog -LogName Security | Where-Object -FilterScript {$_.EventID -eq "4732"}
     $hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
     Foreach($i in $EventID_4732){
