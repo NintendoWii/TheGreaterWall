@@ -18,7 +18,7 @@ Function ImageFileExecutionOptions{
         
     $hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     
     $HKLM_FileExec = Get-ItemProperty -Path "HKLM:\\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -ErrorAction SilentlyContinue
     $HKLM_SilentProcessExit = Get-ItemProperty -Path "HKLM:\\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\*" -ErrorAction SilentlyContinue
