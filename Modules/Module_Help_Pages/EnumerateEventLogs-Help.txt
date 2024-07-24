@@ -1,0 +1,38 @@
+Help page for EnumerateEventLogs
+##################################
+
+What it does:
+	Surveys a windows system to determine what event logs actually exist on the device. Runtime is about 30 mins.
+
+Commandlets used:
+	get-ciminstance
+	Get-Date
+	Get-Winevent
+	Get-Culture
+	
+Output Format:
+	CSV
+	
+Sample Output:
+	IP              : null
+	Hostname        : LAPTOP-D43
+	OperatingSystem : Microsoft Windows 11 Home
+	DateCollected   : 24-Jul-2024 0948
+	Logname         : Security
+	ID              : 4688
+	Firstcreated    : 24-Jul-2024-9:45:31
+	Lastcreated     : 23-Jul-2024-20:20:32
+	RecordCount     : 1826
+	UID             : 8564688
+
+Fields:
+	IP- Self explanatory
+	Hostname- Self explanatory
+	OperatingSystem- Self explanatory
+	DateCollected- Date the module was run
+	Logname- Name of event log (ex: security)
+	ID- Log ID (Ex: 4688)
+	Firstcreated    : Timestamp of most recent Log entry
+	Lastcreated     : Timestamp of oldest Log entry
+	RecordCount     : Total number of logs
+	UID             : UID is used for sorting and grouping purposes. It is comprised of a hash of the log content concatenated with the log ID
