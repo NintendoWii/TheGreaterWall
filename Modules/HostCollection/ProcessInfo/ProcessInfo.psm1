@@ -33,7 +33,7 @@ Function ProcessInfo{
 
     $hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     $ErrorActionPreference="silentlycontinue"
     $ProcessList = Get-WmiObject -Class Win32_Process
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
