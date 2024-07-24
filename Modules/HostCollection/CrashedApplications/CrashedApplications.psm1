@@ -18,7 +18,7 @@ function CrashedApplications{
 
     $Hostname= $env:COMPUTERNAME
     $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-    $operatingsystem= "$($os.caption) $($osversion)"
+    $operatingsystem= "$($os.caption) $($os.version)"
     $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
     
     $Faults = Get-EventLog -LogName Application -InstanceId 1000
