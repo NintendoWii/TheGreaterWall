@@ -1,0 +1,40 @@
+Help page for AppCompatCache
+##################################
+
+What it does:
+	Gathers information about historical program execution from the app compat cache
+
+Commandlets used:
+	Get-itemproperty
+	get-ciminstance
+	Get-Date
+	
+Output Format:
+	CSV
+	
+Sample Output:
+	IP               : null
+	Hostname         : LAPTOP-D4J1KGC0
+	OperatingSystem  : Microsoft Windows 11 Home 10.0.22631
+	DateCollected    : 24-Jul-2024 1258
+	Source           : AppCompatCache
+	CachePosition    : 484
+	LastModifiedTime : 2024-06-13T05:32:33.0643972Z
+	Path             : C:\WINDOWS\system32\wbem\mofcomp.exe
+	RelativeEvent    : mofcomp.exe-2024-06-13
+	RelativeName     : mofcomp.exe
+	Shortpath        : C:\WINDOWS\system32
+
+Fields:
+	IP- Ip of the endpoint that this module was run on (This field will read "NULL" until you run the post processor)
+	Hostname- Hostname of the machine this module was run on (This field will be present without post processing)
+	DateCollected- Timestamp that the Module was run on the endpoint
+	Stream- The name of the alternate data stream
+	ZoneIdentifier- Content of the data stream
+	Source- Source of the data
+	CachePosition- from 1 to n, where the entry resides amongst all the entries
+	LastModifiedTime- Approximate time of execution
+	Path- Full path to the program executed
+	RelativeEvent- Composite key with short name and short date
+	RelativeName- Just the name of the program executed without the full file path
+	Shortpath- Just the Path of the program executed without the name of the program
