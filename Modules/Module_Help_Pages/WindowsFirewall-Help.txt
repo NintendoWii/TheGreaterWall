@@ -1,0 +1,52 @@
+Help page for WindowsFirewall
+##################################
+
+What it does:
+	Gathers windows firewall rule info as well as port proxies that have been configured.
+
+Commandlets used:
+	get-ciminstance
+	Get-Date
+	netsh
+	
+Output Format:
+	CSV
+	
+Sample Output:
+	IP              : null
+	Hostname        : LAPTOP-D12
+
+	OperatingSystem : Microsoft Windows 11 Home 
+	DateCollected   : 24-Jul-2024 1852
+	RuleName        : Google Chrome (mDNS-In)
+	Enabled         : Yes
+	Direction       : In
+	Profiles        : Domain-Private-Public
+	Grouping        : Google Chrome
+	Localip         : Any
+	Remoteip        : Any
+	Protocol        : UDP
+	Localport       : 5353
+	Remoteport      : Any
+	EdgeTraversal   : No
+	Action          : Allow
+	Source          : WindowsFirewall
+
+Fields:
+	IP- Ip of the device the module was run on
+	Hostname- Hostname of the device the module was run on
+	OperatingSystem- OS of the device the module was run on
+	DateCollected- Date the module was run
+	RuleName- Name of firewall Rule
+	Enabled- Whether or not the rule is enabled
+	Direction- inbound or outbound
+	Profiles- Profiles for wich the rule is applicable
+	Grouping- Rule Group
+	Localip- Self-explanatory
+	Remoteip- Self-explanatory
+	Protocol- Self-explanatory
+	Localport- Self-explanatory
+	Remoteport- Self-explanatory
+	EdgeTraversal- firewall rules for traffic that needs to traverse NAT devices
+	Action- Block or Allow
+	Source- Module name
