@@ -4,7 +4,7 @@ function NetworkInterfaces{
         $outputclass= [pscustomobject][ordered]@{
             IP= "null"
             Hostname= $null
-	        OperatingSystem= $null
+            OperatingSystem= $null
             DateCollected= $null
             InterfaceName= $null
             MacAddress= $null
