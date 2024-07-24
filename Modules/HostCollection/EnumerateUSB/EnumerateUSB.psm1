@@ -19,7 +19,7 @@ function EnumerateUSB{
         $regobj= @()
         $hostname= $env:computername
         $os= Get-CimInstance -ClassName Win32_OperatingSystem   
-        $operatingsystem= "$($os.caption) $($osversion)"
+        $operatingsystem= "$($os.caption) $($os.version)"
         $date= (Get-Date -Format "dd-MMM-yyyy HH:mm").Split(":") -join ""
 
         $usb= (Get-childitem -Path "HKLM:\SYSTEM\CurrentControlSet\Enum\USB\*").Name.Replace("HKEY_LOCAL_MACHINE","HKLM:")
