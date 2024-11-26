@@ -5,7 +5,7 @@ function InstalledSoftware{
             Hostname= $null
             OperatingSystem= $null
             DateCollected= $null
-            Source= InstalledSoftware
+            Source= "InstalledSoftware"
             Name= $null
             Version= $null
             InstallLocation= $null
