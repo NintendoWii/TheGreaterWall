@@ -73,7 +73,8 @@ function Get-UnsignedLoadedModules {
     }
 
     # Output the results
-    $output | ConvertTo-Json -Depth 1
+    #$output | ConvertTo-Json -Depth 1
+    $output | convertto-csv
 }
 
 Export-ModuleMember -Function Get-UnsignedLoadedModules
