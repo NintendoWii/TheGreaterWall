@@ -792,7 +792,7 @@ function tgw ($rawcommand){
                                     $($status | where {$_.computername -eq $($j.name)}).WinRM="Failed"
                                 }
                  
-                                $j | remove-job -force                                points
+                                #$j | remove-job -force                                #points
                             }
                         }                
                     }
@@ -808,8 +808,10 @@ function tgw ($rawcommand){
                     pause
                     foreach ($u in $unreachable){
                         $listofips= $listofips | where {$_ -ne $u.computername}
-                        New-Variable -name listofips -Value $listofips -Force -ErrorAction SilentlyContinue -Scope global
                     }
+
+                    New-Variable -name listofips -Value $listofips -Force -ErrorAction SilentlyContinue -Scope global
+                    
                 }
     
                 else{
@@ -827,6 +829,8 @@ function tgw ($rawcommand){
                 }                                      
             }
         }
+        
+        get-job | where {$_.command -like "*test-wsman*"} | % {$_ | remove-job}
     }
 
     #Compresses all the results into an archive to be saved or viewed later and ensures that they dont get re-postprocessed
