@@ -49,9 +49,9 @@ function TasksScheduled{
             $author= "NULL"
         }
 	    
-        $actions= $item.actions.execute
+        $action= $item.actions.execute
         
-        if ($actions.count -gt 1){
+        if ($action.count -gt 1){
             $action_container= @()
             foreach ($i in $item.actions){
     	        $arguments= $i.arguments
