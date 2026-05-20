@@ -49,14 +49,23 @@ function TasksScheduled{
             $author= "NULL"
         }
 	    
-        $action= $item.actions.execute
-	$arguments= $item.actions.arguments
-	$action= $action + " $arguments"
+        $actions= $item.actions.execute
+        
+        if ($actions.count -gt 1){
+            $action_container= @()
+            foreach ($i in $item.actions){
+    	        $arguments= $i.arguments
+	            $action= $i.execute + " $arguments"
+                $action_container+= $action
+           }
+
+            $action= $action_container-join'; '
+        }
         
         if (!$action){
             $action= "NULL"
         }
-
+        
         $results.Hostname= $hostname
 	$results.operatingsystem= $operatingsystem
         $results.DateCollected= $date
